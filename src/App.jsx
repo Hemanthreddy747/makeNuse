@@ -1,36 +1,59 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { Toaster } from 'sonner'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import { AuthProvider, useAuth } from './context/AuthProvider'
+import { LoginModalProvider, useLoginModal } from './context/LoginModalContext'
 import AppLayout from './components/layout/AppLayout'
 import LandingPage from './pages/LandingPage'
-import LoginPage from './pages/LoginPage'
-import SignupPage from './pages/SignupPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import LoginModal from './components/ui/LoginModal'
 import DashboardPage from './features/dashboard/DashboardPage'
 import TodoPage from './features/todos/TodoPage'
 import LocationPage from './features/location/LocationPage'
 import ProfilePage from './features/profile/ProfilePage'
 import FeaturesPage from './features/dummy/FeaturesPage'
 import SettingsPage from './features/dummy/SettingsPage'
+import { useEffect } from 'react'
 import { isSupabaseConfigured } from './lib/supabaseClient'
 import './App.css'
 
-function PublicRoute({ children }) {
+function AuthRedirect({ view }) {
+  const { openLogin, openSignup, openForgotPassword } = useLoginModal()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (view === 'signup') openSignup()
+    else if (view === 'forgot') openForgotPassword()
+    else openLogin()
+    navigate('/', { replace: true })
+  }, [view, openLogin, openSignup, openForgotPassword, navigate])
+
+  return null
+}
+
+function ForgotPasswordRoute() {
   const { user, loading, isRecoveryMode } = useAuth()
+  const { openForgotPassword } = useLoginModal()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (loading) return
+    if (user && isRecoveryMode) return
+    openForgotPassword()
+    navigate('/', { replace: true })
+  }, [loading, user, isRecoveryMode, openForgotPassword, navigate])
+
   if (loading) return <div className="app-shell"><p>Loading...</p></div>
-  if (user) {
-    if (isRecoveryMode) return <Navigate to="/forgot-password" replace />
-    return <Navigate to="/dashboard" replace />
-  }
-  return children
+  if (user && isRecoveryMode) return <ForgotPasswordPage />
+  return null
 }
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-      <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/login" element={<AuthRedirect view="login" />} />
+      <Route path="/signup" element={<AuthRedirect view="signup" />} />
+      <Route path="/forgot-password" element={<ForgotPasswordRoute />} />
 
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
@@ -44,6 +67,16 @@ function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+  )
+}
+
+function AppContent() {
+  return (
+    <LoginModalProvider>
+      <AppRoutes />
+      <LoginModal />
+      <ToastContainer position="bottom-left" autoClose={3000} />
+    </LoginModalProvider>
   )
 }
 
@@ -61,8 +94,7 @@ function App() {
 
   return (
     <AuthProvider>
-      <AppRoutes />
-      <Toaster position="top-center" richColors closeButton />
+      <AppContent />
     </AuthProvider>
   )
 }

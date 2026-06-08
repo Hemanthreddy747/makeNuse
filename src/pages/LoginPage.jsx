@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthProvider'
-import { toast } from 'sonner'
+import { toast } from 'react-toastify'
 
 function EyeIcon({ open }) {
   return (

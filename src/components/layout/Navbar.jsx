@@ -1,11 +1,14 @@
 import { useState } from "react"
-import { NavLink } from "react-router-dom"
+import { NavLink, Link } from "react-router-dom"
 import { motion, AnimatePresence } from "motion/react"
 import { Menu, X, LogOut, User } from "lucide-react"
 import { useAuth } from "../../context/AuthProvider"
+import { useLoginModal } from "../../context/LoginModalContext"
+import logo from "../../assets/logo.png"
 
 export default function Navbar() {
   const { user, signOut } = useAuth()
+  const { openLogin, openSignup } = useLoginModal()
   const [isOpen, setIsOpen] = useState(false)
 
   const toggleMenu = () => setIsOpen((prev) => !prev)
@@ -16,16 +19,25 @@ export default function Navbar() {
     await signOut()
   }
 
-  const links = [
-    { to: "/dashboard", label: "Dashboard" },
-    { to: "/todo", label: "Todo" },
-    { to: "/location", label: "Location" },
-    { to: "/settings", label: "Settings" },
-  ]
+  const isAuthenticated = !!user
+
+  const links = isAuthenticated
+    ? [
+        { to: "/dashboard", label: "Dashboard" },
+        { to: "/todo", label: "Todo" },
+        { to: "/location", label: "Location" },
+        { to: "/settings", label: "Settings" },
+      ]
+    : [
+        { to: "/", label: "Home" },
+        { to: "/features", label: "Features" },
+      ]
 
   const userInitial = (
     user?.user_metadata?.full_name || user?.email || "?"
   ).charAt(0).toUpperCase()
+
+  const isHome = (to) => to === "/dashboard" || to === "/"
 
   return (
     <div className="navbar-wrapper">
@@ -35,18 +47,12 @@ export default function Navbar() {
             className="navbar-logo"
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
-            whileHover={{ rotate: 10 }}
+            whileHover={{ rotate: 5 }}
             transition={{ duration: 0.3 }}
           >
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="16" fill="url(#navbrand)" />
-              <defs>
-                <linearGradient id="navbrand" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#FF9966" />
-                  <stop offset="1" stopColor="#FF5E62" />
-                </linearGradient>
-              </defs>
-            </svg>
+            <Link to="/" className="navbar-brand">
+              <img src={logo} alt="Rent Jaga" className="navbar-logo-img" />
+            </Link>
           </motion.div>
 
           <nav className="navbar-desktop-nav">
@@ -60,7 +66,7 @@ export default function Navbar() {
               >
                 <NavLink
                   to={link.to}
-                  end={link.to === "/dashboard"}
+                  end={isHome(link.to)}
                   className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
                   onClick={closeMenu}
                 >
@@ -77,18 +83,27 @@ export default function Navbar() {
             transition={{ duration: 0.3, delay: 0.2 }}
             whileHover={{ scale: 1.05 }}
           >
-            <NavLink to="/profile" className="navbar-user-btn" onClick={closeMenu}>
-              <span className="navbar-avatar">{userInitial}</span>
-              <span className="navbar-email">{user?.email}</span>
-            </NavLink>
-            <button
-              type="button"
-              className="navbar-logout-btn"
-              onClick={handleLogout}
-              title="Logout"
-            >
-              <LogOut size={16} />
-            </button>
+            {isAuthenticated ? (
+              <>
+                <NavLink to="/profile" className="navbar-user-btn" onClick={closeMenu}>
+                  <span className="navbar-avatar">{userInitial}</span>
+                  <span className="navbar-email">{user?.email}</span>
+                </NavLink>
+                <button
+                  type="button"
+                  className="navbar-logout-btn"
+                  onClick={handleLogout}
+                  title="Logout"
+                >
+                  <LogOut size={16} />
+                </button>
+              </>
+            ) : (
+              <div className="navbar-public-actions">
+                <button onClick={() => { closeMenu(); openLogin() }} className="navbar-login-btn" style={{ background: 'transparent', border: 'none', padding: '6px 18px', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-semibold)', borderRadius: 'var(--radius-pill)', cursor: 'pointer', color: 'var(--color-text)' }}>Log in</button>
+                <button onClick={() => { closeMenu(); openSignup() }} className="navbar-signup-btn" style={{ background: 'var(--color-primary)', border: 'none', padding: '6px 18px', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-semibold)', borderRadius: 'var(--radius-pill)', cursor: 'pointer', color: 'var(--color-white)' }}>Sign up</button>
+              </div>
+            )}
           </motion.div>
 
           <motion.button
@@ -132,7 +147,7 @@ export default function Navbar() {
                 >
                   <NavLink
                     to={item.to}
-                    end={item.to === "/dashboard"}
+                    end={isHome(item.to)}
                     className={({ isActive }) =>
                       `nav-link nav-link-mobile${isActive ? " active" : ""}`
                     }
@@ -151,14 +166,23 @@ export default function Navbar() {
               transition={{ delay: 0.5 }}
               exit={{ opacity: 0, y: 20 }}
             >
-              <NavLink to="/profile" className="navbar-mobile-profile" onClick={closeMenu}>
-                <User size={18} />
-                <span>Profile</span>
-              </NavLink>
-              <button type="button" className="navbar-mobile-logout" onClick={handleLogout}>
-                <LogOut size={18} />
-                <span>Logout</span>
-              </button>
+              {isAuthenticated ? (
+                <>
+                  <NavLink to="/profile" className="navbar-mobile-profile" onClick={closeMenu}>
+                    <User size={18} />
+                    <span>Profile</span>
+                  </NavLink>
+                  <button type="button" className="navbar-mobile-logout" onClick={handleLogout}>
+                    <LogOut size={18} />
+                    <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => { closeMenu(); openLogin() }} className="navbar-mobile-login-btn" style={{ background: '#f3f4f6', border: 'none', display: 'block', width: '100%', padding: '14px 20px', fontSize: 'var(--font-size-base)', fontWeight: 'var(--font-semibold)', borderRadius: 'var(--radius-pill)', cursor: 'pointer', color: 'var(--color-text)', textAlign: 'center' }}>Log in</button>
+                  <button onClick={() => { closeMenu(); openSignup() }} className="navbar-mobile-signup-btn" style={{ background: 'var(--color-primary)', border: 'none', display: 'block', width: '100%', padding: '14px 20px', fontSize: 'var(--font-size-base)', fontWeight: 'var(--font-semibold)', borderRadius: 'var(--radius-pill)', cursor: 'pointer', color: 'var(--color-white)', textAlign: 'center' }}>Sign up</button>
+                </>
+              )}
             </motion.div>
           </motion.div>
         )}
