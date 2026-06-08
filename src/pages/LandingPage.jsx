@@ -6,13 +6,13 @@ export default function LandingPage() {
   return (
     <main className="landing-shell">
       <div className="landing-content">
-        <div className="landing-badge">Supabase + React</div>
+        <div className="landing-badge">RentJaga</div>
         <h1 className="landing-title">
           Build faster.<br />
           <span className="landing-highlight">Ship smarter.</span>
         </h1>
         <p className="landing-subtitle">
-          A production-ready boilerplate with authentication, database, and
+          Your all-in-one property rental management platform with authentication, database, and
           real-time features — powered by Supabase and React.
         </p>
         <div className="landing-actions">

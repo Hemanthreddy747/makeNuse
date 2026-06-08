@@ -9,7 +9,7 @@ export default function HelpPage() {
       <div className="dash-card">
         <h2>Getting Started</h2>
         <p className="text-muted">
-          This is a Supabase Auth starter template built with React and Vite.
+          This is RentJaga, a property rental management platform built with React and Vite.
           Use the navigation to explore different sections of the app.
         </p>
       </div>

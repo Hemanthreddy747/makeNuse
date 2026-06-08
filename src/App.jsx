@@ -52,7 +52,7 @@ function App() {
     return (
       <main className="app-shell">
         <section className="auth-card">
-          <h1>Supabase Auth App</h1>
+          <h1>RentJaga</h1>
           <p>Add <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> to a <code>.env</code> file.</p>
         </section>
       </main>
