@@ -8,11 +8,9 @@ import LandingPage from './pages/LandingPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import LoginModal from './components/ui/LoginModal'
 import DashboardPage from './features/dashboard/DashboardPage'
-import TodoPage from './features/todos/TodoPage'
-import LocationPage from './features/location/LocationPage'
 import ProfilePage from './features/profile/ProfilePage'
-import FeaturesPage from './features/dummy/FeaturesPage'
-import SettingsPage from './features/dummy/SettingsPage'
+import AddNewPage from './features/add-new/AddNewPage'
+import ManagePage from './features/manage/ManagePage'
 import { useEffect } from 'react'
 import { isSupabaseConfigured } from './lib/supabaseClient'
 import './App.css'
@@ -57,11 +55,9 @@ function AppRoutes() {
 
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/todo" element={<TodoPage />} />
-        <Route path="/location" element={<LocationPage />} />
+        <Route path="/add-new" element={<AddNewPage />} />
+        <Route path="/manage" element={<ManagePage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/features" element={<FeaturesPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
       <Route path="/" element={<LandingPage />} />

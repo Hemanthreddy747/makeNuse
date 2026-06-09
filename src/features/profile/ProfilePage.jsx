@@ -1,7 +1,8 @@
+import { LogOut } from 'lucide-react'
 import { useAuth } from '../../context/AuthProvider'
 
 export default function ProfilePage() {
-  const { user, signInWithGoogle } = useAuth()
+  const { user, signInWithGoogle, signOut } = useAuth()
 
   const displayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email
   const avatarUrl = user.user_metadata?.avatar_url
@@ -102,6 +103,14 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="profile-card-detailed">
+        <h3>Account</h3>
+        <button className="btn-logout" onClick={signOut}>
+          <LogOut size={18} />
+          <span>Logout</span>
+        </button>
       </div>
     </div>
   )

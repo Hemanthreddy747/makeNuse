@@ -1,40 +1,7 @@
-import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthProvider'
-import { supabase } from '../../lib/supabaseClient'
-
-function StatCard({ label, value, accent }) {
-  return (
-    <div className={`stat-card stat-${accent}`}>
-      <span className="stat-value">{value}</span>
-      <span className="stat-label">{label}</span>
-    </div>
-  )
-}
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const [stats, setStats] = useState({ total: 0, completed: 0, pending: 0 })
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    let cancelled = false
-    supabase
-      .from('todos')
-      .select('is_completed')
-      .eq('user_id', user.id)
-      .then(({ data, error }) => {
-        if (cancelled) return
-        if (!error && data) {
-          setStats({
-            total: data.length,
-            completed: data.filter((t) => t.is_completed).length,
-            pending: data.filter((t) => !t.is_completed).length,
-          })
-        }
-        setLoading(false)
-      })
-    return () => { cancelled = true }
-  }, [user.id])
 
   const displayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email
 
@@ -45,27 +12,21 @@ export default function DashboardPage() {
         <p className="page-subtitle">Welcome back, {displayName}</p>
       </div>
 
-      <div className="stats-grid">
-        <StatCard label="Total Tasks" value={loading ? '...' : stats.total} accent="primary" />
-        <StatCard label="Completed" value={loading ? '...' : stats.completed} accent="success" />
-        <StatCard label="Pending" value={loading ? '...' : stats.pending} accent="warning" />
-      </div>
-
       <div className="dashboard-cards">
         <div className="dash-card">
           <h2>Quick Actions</h2>
           <div className="quick-actions">
-            <a href="/dashboard/todos" className="quick-action">
+            <a href="/add-new" className="quick-action">
               <span className="qa-icon">+</span>
-              <span>New Task</span>
+              <span>Add New</span>
             </a>
-            <a href="/dashboard/profile" className="quick-action">
+            <a href="/manage" className="quick-action">
+              <span className="qa-icon">&#x2630;</span>
+              <span>Manage</span>
+            </a>
+            <a href="/profile" className="quick-action">
               <span className="qa-icon">@</span>
               <span>Profile</span>
-            </a>
-            <a href="/dashboard/analytics" className="quick-action">
-              <span className="qa-icon">&#x25B3;</span>
-              <span>Analytics</span>
             </a>
           </div>
         </div>

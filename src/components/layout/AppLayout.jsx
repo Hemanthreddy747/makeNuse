@@ -1,5 +1,5 @@
 import { Outlet, Navigate } from 'react-router-dom'
-import Navbar from './Navbar'
+import FloatingNav from '../ui/FloatingNav'
 import { useAuth } from '../../context/AuthProvider'
 import { isSupabaseConfigured } from '../../lib/supabaseClient'
 
@@ -30,7 +30,7 @@ export default function AppLayout() {
 
   return (
     <div className="app-layout">
-      <Navbar />
+      <FloatingNav />
       <main className="app-content">
         <Outlet />
       </main>
