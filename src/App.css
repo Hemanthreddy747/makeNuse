@@ -742,6 +742,148 @@ button:disabled {
 
 
 /* ═══════════════════════════════════════════════════════
+   CONFIRM MODAL
+   ═══════════════════════════════════════════════════════ */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 1rem;
+  animation: confirmFadeIn 0.15s ease-out;
+}
+
+@keyframes confirmFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.confirm-modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6) var(--spacing-6) var(--spacing-4);
+  box-shadow: var(--shadow-2xl);
+  max-width: 360px;
+  width: 100%;
+  animation: confirmScaleIn 0.15s ease-out;
+}
+
+@keyframes confirmScaleIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.confirm-message {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  margin: 0 0 var(--spacing-5);
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: var(--spacing-3);
+  justify-content: flex-end;
+}
+
+.confirm-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.confirm-btn-yes {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+.confirm-btn-yes:hover {
+  background: var(--color-danger-hover, #dc2626);
+}
+
+.confirm-btn-no {
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.confirm-btn-no:hover {
+  background: var(--color-surface-hover, #f3f4f6);
+  color: var(--color-text);
+}
+
+/* ── Input modal ── */
+.input-modal {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  box-shadow: var(--shadow-2xl);
+  max-width: 380px;
+  width: 100%;
+  animation: confirmScaleIn 0.15s ease-out;
+}
+
+.input-modal-title {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0 0 var(--spacing-4);
+}
+
+.input-modal-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  border: 1px solid #d1d5db;
+  border-radius: var(--radius-lg);
+  outline: none;
+  background: #fff;
+  color: #1f2937;
+  box-sizing: border-box;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.input-modal-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.input-modal-actions {
+  display: flex;
+  gap: var(--spacing-3);
+  justify-content: flex-end;
+  margin-top: var(--spacing-5);
+}
+
+.input-modal-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s;
+  background: #2563eb;
+  color: #fff;
+}
+
+.input-modal-btn:hover {
+  background: #1d4ed8;
+}
+
+/* ═══════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
@@ -771,6 +913,1150 @@ button:disabled {
   .app-content {
     padding: var(--spacing-lg) var(--spacing-md);
     padding-top: 80px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   STATS GRID
+   ═══════════════════════════════════════════════════════ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-card-top {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xs);
+}
+
+.stat-card-top .stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.stat-primary .stat-card-top { color: var(--color-primary); }
+.stat-success .stat-card-top { color: var(--color-success); }
+.stat-danger .stat-card-top { color: var(--color-danger); }
+.stat-info .stat-card-top { color: var(--color-info); }
+
+.stat-primary .stat-label { color: var(--color-primary); }
+.stat-success .stat-label { color: var(--color-success); }
+.stat-danger .stat-label { color: var(--color-danger); }
+.stat-info .stat-label { color: var(--color-info); }
+
+/* ═══════════════════════════════════════════════════════
+   RENT SUMMARY
+   ═══════════════════════════════════════════════════════ */
+.rent-summary {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.rent-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border-light);
+  font-size: var(--font-size-sm);
+}
+
+.rent-summary-row:last-child {
+  border-bottom: none;
+}
+
+.text-success { color: var(--color-success); }
+.text-danger { color: var(--color-danger); }
+
+/* ═══════════════════════════════════════════════════════
+   DASHBOARD SECTION
+   ═══════════════════════════════════════════════════════ */
+.dashboard-section {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.dashboard-section h2 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PROPERTY CARDS (Pictorial)
+   ═══════════════════════════════════════════════════════ */
+.property-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.property-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.property-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.property-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  color: #fff;
+}
+
+.property-type-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.25);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.property-card-body {
+  padding: var(--spacing-md) var(--spacing-lg);
+  display: grid;
+  gap: var(--spacing-sm);
+}
+
+.property-card-body h3 {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+}
+
+.property-card-body .text-muted {
+  font-size: var(--font-size-xs);
+}
+
+.property-card-stats {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xs);
+}
+
+.pstat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.property-card-pending {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  font-weight: 600;
+  padding: 4px 8px;
+  background: var(--color-danger-bg);
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-xs);
+}
+
+/* ═══════════════════════════════════════════════════════
+   TAB BAR
+   ═══════════════════════════════════════════════════════ */
+.tab-bar {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-2xl);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--spacing-sm);
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  transition: all 0.15s;
+}
+
+.tab-btn.active {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary-border);
+}
+
+.tab-btn:hover:not(.active) {
+  background: var(--color-surface-hover, #f3f4f6);
+}
+
+.tab-content {
+  min-height: 200px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENTAL FORM
+   ═══════════════════════════════════════════════════════ */
+.rental-form {
+  display: grid;
+  gap: var(--spacing-lg);
+  max-width: 560px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.form-group label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.form-group input,
+.form-group select {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 24px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIST CONTAINER (Manage)
+   ═══════════════════════════════════════════════════════ */
+.list-container {
+  display: grid;
+  gap: var(--spacing-sm);
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.list-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.list-row-info strong {
+  font-size: var(--font-size-sm);
+}
+
+.list-row-info .text-muted {
+  font-size: var(--font-size-xs);
+}
+
+.list-row-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+}
+
+/* ── Rent status badges ──────────────── */
+.rent-status {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.rent-status-paid {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.rent-status-pending {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.rent-status-overdue {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+}
+
+/* ── Icon buttons ────────────────────── */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: all 0.15s;
+}
+
+.icon-btn:hover {
+  background: var(--color-surface-hover, #f3f4f6);
+}
+
+.icon-btn.danger:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-color: var(--color-danger-border);
+}
+
+.icon-btn.success:hover {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-color: var(--color-success-border);
+}
+
+/* ── Editable cell ───────────────────── */
+.editable-cell {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+}
+
+.editable-cell:hover {
+  background: var(--color-surface-hover, #f3f4f6);
+}
+
+.editable-cell.editing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editable-cell.editing input {
+  width: 100px;
+  padding: 4px 6px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  outline: none;
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   PROPERTY TREE
+   ═══════════════════════════════════════════════════════ */
+.property-tree-list {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.property-tree-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.property-tree {
+  user-select: none;
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: 8px 10px;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.tree-node:hover {
+  background: var(--color-surface-hover, #f3f4f6);
+}
+
+.tree-node-property {
+  font-weight: 700;
+  font-size: var(--font-size-base);
+}
+
+.tree-node-floor {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  padding-left: 32px;
+}
+
+.tree-node-room {
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  padding-left: 56px;
+}
+
+.tree-node-person {
+  padding-left: 80px;
+  font-size: var(--font-size-sm);
+  cursor: default;
+}
+
+.tree-toggle {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.tree-icon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.tree-node-property .tree-icon {
+  color: var(--color-primary);
+}
+
+.tree-icon-floor::before {
+  content: '▤';
+  font-size: 14px;
+  color: var(--color-info);
+}
+
+.tree-icon-room::before {
+  content: '⊞';
+  font-size: 14px;
+  color: var(--color-warning-text, #b8860b);
+}
+
+.tree-icon-person::before {
+  content: '●';
+  font-size: 10px;
+  color: var(--color-success);
+}
+
+.tree-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.tree-count {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.tree-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-left: var(--spacing-2);
+}
+
+.tree-node-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.tree-node:hover .tree-node-actions {
+  opacity: 1;
+}
+
+.tree-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.12s;
+}
+
+.tree-add-btn:hover {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.tree-del-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.12s;
+}
+
+.tree-del-btn:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.tree-children {
+  position: relative;
+}
+
+.tree-children::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border);
+}
+
+.tree-node-wrapper {
+  position: relative;
+}
+
+.tree-empty {
+  padding: 6px 10px 6px 44px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .tree-meta {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   APARTMENT BUILDER
+   ═══════════════════════════════════════════════════════ */
+
+.apt-builder-header {
+  margin-bottom: var(--spacing-xl);
+}
+
+.apt-builder-header h2 {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.apt-list {
+  display: grid;
+  gap: var(--spacing-xl);
+}
+
+.apt-empty {
+  text-align: center;
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  border: 1.5px dashed #d1d5db;
+  border-radius: var(--radius-lg);
+  background: #fafbfc;
+}
+
+.apt-empty-icon {
+  color: var(--color-border);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ── Apartment building shell ── */
+.apt-building {
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.apt-building--demo {
+  background: #f0f7ff;
+}
+.apt-building--demo .apt-roof-edge {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
+}
+.apt-building--demo .apt-roof-body {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+
+.apt-demo-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: #fbbf24;
+  color: #92400e;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.apt-floor--demo {
+  box-shadow: inset 3px 0 0 0 #60a5fa;
+  background: #fafcff;
+}
+.apt-room--demo {
+  background: #eef5ff;
+}
+
+/* ── Roof ── */
+.apt-roof-edge {
+  height: 3px;
+  background: linear-gradient(90deg, #1e3a5f, #2563eb, #1e3a5f);
+}
+
+.apt-roof-body {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: 5px var(--spacing-md);
+  background: linear-gradient(135deg, #1e3a5f, #1a4971);
+  color: #fff;
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+}
+
+.apt-roof-icon {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.apt-roof-body .vi-label {
+  color: #fff;
+  padding: 2px 6px;
+}
+
+.apt-roof-body .vi-label:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+}
+
+.apt-roof-body .vi-input {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.apt-roof-badge {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.apt-roof-meta {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: auto;
+}
+
+.apt-roof-body .apt-icon-btn--del {
+  color: rgba(255, 255, 255, 0.5);
+}
+.apt-roof-body .apt-icon-btn--del:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.apt-collapse-btn {
+  color: rgba(255, 255, 255, 0.5);
+}
+.apt-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.apt-chevron {
+  transition: transform 0.2s ease;
+}
+.apt-chevron--collapsed {
+  transform: rotate(-90deg);
+}
+
+/* ── Collapse animation ── */
+.apt-body {
+  overflow: hidden;
+  transition: max-height 0.2s ease, padding 0.2s ease, opacity 0.15s ease;
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: #f3f4f6;
+}
+
+/* ── Single floor row ── */
+.apt-floor {
+  background: #fff;
+  border: 1px solid #eef0f2;
+  border-radius: var(--radius-lg);
+  padding: 3px var(--spacing-md);
+  position: relative;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-shadow: inset 3px 0 0 0 #4f46e5;
+}
+
+.apt-floor:hover {
+  border-color: #cbd5e1;
+  box-shadow: inset 3px 0 0 0 #4f46e5, 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.apt-floor-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-bottom: 1px;
+  padding-bottom: 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-weight: 600;
+  font-size: 14px;
+  color: #334155;
+}
+
+.apt-floor-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4f46e5;
+  flex-shrink: 0;
+}
+
+.apt-floor-label .vi-label {
+  flex: 1;
+}
+
+.apt-floor-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+  background: #f8fafc;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+}
+
+/* ── Apartment units row ── */
+.apt-units {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  align-items: stretch;
+}
+
+/* ── Individual apartment unit ── */
+.apt-room {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: var(--radius-md);
+  padding: 2px 5px;
+  min-width: 140px;
+  max-width: 190px;
+  position: relative;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.apt-room:hover {
+  border-color: #818cf8;
+  box-shadow: 0 1px 4px rgba(99, 102, 241, 0.1);
+}
+
+.apt-room-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid #dbeafe;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.apt-room-icon {
+  flex-shrink: 0;
+  color: #6366f1;
+  opacity: 0.6;
+}
+
+.apt-room-head .vi-label {
+  padding: 1px 2px;
+  font-size: 14px;
+  flex: 1;
+}
+
+.apt-room-head .vi-input {
+  font-size: 14px;
+  padding: 1px 4px;
+  min-width: 30px;
+}
+
+/* ── Beds inside unit ── */
+.apt-beds {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.apt-bed {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 4px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #047857;
+  transition: border-color 0.12s;
+}
+
+.apt-bed:hover {
+  border-color: #34d399;
+}
+
+.apt-bed--empty {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #be123c;
+}
+
+.apt-bed--empty:hover {
+  border-color: #fb7185;
+}
+
+.apt-bed--former {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #6b7280;
+  cursor: default;
+}
+
+.apt-bed--former:hover {
+  border-color: #9ca3af;
+}
+
+.apt-bed-dates {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.apt-bed-icon {
+  flex-shrink: 0;
+  color: #10b981;
+  opacity: 0.7;
+}
+
+.apt-bed--empty .apt-bed-icon {
+  color: #e11d48;
+  opacity: 0.6;
+}
+
+.apt-bed .vi-label {
+  padding: 0 2px;
+  font-size: 14px;
+  flex: 1;
+  min-width: 16px;
+}
+
+.apt-bed .vi-input {
+  font-size: 14px;
+  padding: 1px 3px;
+  min-width: 20px;
+}
+
+.apt-bed-del {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.3;
+  transition: all 0.12s;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.apt-bed-del:hover {
+  opacity: 1;
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+/* ── Add bed ── */
+.apt-add-bed {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 7px;
+  border: 1px dashed #d1d5db;
+  border-radius: 4px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s;
+  min-height: 22px;
+}
+
+.apt-add-bed:hover {
+  border-color: #fb7185;
+  color: #e11d48;
+  background: #fff1f2;
+}
+
+/* ── Add unit (apartment) ── */
+.apt-add-unit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border: 1.5px dashed #d1d5db;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 34px;
+  transition: all 0.15s;
+}
+
+.apt-add-unit:hover {
+  border-color: #818cf8;
+  color: #6366f1;
+  background: #eef2ff;
+}
+
+/* ── Add floor ── */
+.apt-add-floor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  padding: 4px var(--spacing-md);
+  border: 1.5px dashed #d1d5db;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: #9ca3af;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s;
+}
+
+.apt-add-floor:hover {
+  border-color: #818cf8;
+  color: #4f46e5;
+  background: #eef2ff;
+}
+
+/* ── Add building ── */
+.apt-add-building {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-lg);
+  padding: 10px 24px;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: var(--radius-xl);
+  background: transparent;
+  color: #64748b;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s;
+}
+
+.apt-add-building:hover {
+  background: #f3f4f6;
+  border-color: #6366f1;
+  color: #4f46e5;
+}
+
+/* ── Shared icon button ── */
+.apt-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.12s;
+}
+
+.apt-icon-btn--del {
+  color: var(--color-text-muted);
+}
+
+.apt-icon-btn--del:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+/* ── Shared inline edit ── */
+.vi-label {
+  cursor: pointer;
+  padding: 1px 3px;
+  border-radius: var(--radius-sm);
+  min-width: 16px;
+  display: inline-block;
+}
+
+.vi-label:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.vi-input {
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: inherit;
+  padding: 1px 4px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: #fff;
+  min-width: 50px;
+  width: auto;
+}
+
+@media (max-width: 640px) {
+  .apt-units {
+    flex-direction: column;
+  }
+  .apt-room {
+    max-width: 100%;
   }
 }
 

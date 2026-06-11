@@ -3,6 +3,7 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { AuthProvider, useAuth } from './context/AuthProvider'
 import { LoginModalProvider, useLoginModal } from './context/LoginModalContext'
+import { ConfirmProvider } from './context/ConfirmContext'
 import AppLayout from './components/layout/AppLayout'
 import LandingPage from './pages/LandingPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
@@ -69,7 +70,9 @@ function AppRoutes() {
 function AppContent() {
   return (
     <LoginModalProvider>
-      <AppRoutes />
+      <ConfirmProvider>
+        <AppRoutes />
+      </ConfirmProvider>
       <LoginModal />
       <ToastContainer position="bottom-left" autoClose={3000} />
     </LoginModalProvider>
