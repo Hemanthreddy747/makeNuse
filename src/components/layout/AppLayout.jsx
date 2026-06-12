@@ -1,5 +1,6 @@
 import { Outlet, Navigate } from 'react-router-dom'
 import FloatingNav from '../ui/FloatingNav'
+import Loader from '../ui/Loader'
 import { useAuth } from '../../context/AuthProvider'
 import { isSupabaseConfigured } from '../../lib/supabaseClient'
 
@@ -20,7 +21,7 @@ export default function AppLayout() {
   if (loading) {
     return (
       <div className="app-shell">
-        <p>Loading...</p>
+        <Loader />
       </div>
     )
   }

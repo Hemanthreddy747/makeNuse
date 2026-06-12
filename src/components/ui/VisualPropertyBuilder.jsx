@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Trash2, Building2, Bed, DoorOpen, ChevronDown } from 'lucide-react'
+import { Plus, Trash2, Building2, Bed, DoorOpen, ChevronDown, User } from 'lucide-react'
 import { useAuth } from '../../context/AuthProvider'
 import { useConfirm } from '../../context/ConfirmContext'
 import InputModal from './InputModal'
+import PersonDetailModal from './PersonDetailModal'
+import Loader from './Loader'
 import {
   fetchProperties, createProperty, deleteProperty, updateProperty,
   fetchAllFloors, createFloor, deleteFloor, updateFloor,
   fetchAllRooms, createRoom, deleteRoom, updateRoom,
-  fetchPersons, createPerson, deletePerson, updatePerson,
+  fetchPersonsWithRooms, createPerson,
 } from '../../lib/rentals'
 
-function InlineEdit({ value, onSave }) {
+function InlineEdit({ value, onSave, readOnly }) {
   const [editing, setEditing] = useState(false)
   const [val, setVal] = useState(value)
   const inputRef = useRef(null)
@@ -29,6 +31,10 @@ function InlineEdit({ value, onSave }) {
       setVal(value)
     }
     setEditing(false)
+  }
+
+  if (readOnly) {
+    return <span className="vi-label">{value}</span>
   }
 
   if (editing) {
@@ -52,48 +58,58 @@ function InlineEdit({ value, onSave }) {
   )
 }
 
-function RoomCard({ room, persons, onAddPerson, onUpdateRoom, onDeleteRoom, onUpdatePerson, onDeletePerson }) {
-  const roomPersons = persons.filter(p => p.room_id === room.id)
+function RoomCard({ room, persons, onOpenPerson, onAddPerson, onUpdateRoom, onDeleteRoom, readOnly }) {
+  const roomPersons = persons
+    .filter(p => p.room_id === room.id)
+    .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0))
 
   return (
     <div className="apt-room">
       <div className="apt-room-head">
         <DoorOpen size={16} className="apt-room-icon" />
-        <InlineEdit value={room.name} onSave={name => onUpdateRoom(room.id, name)} />
-        <button className="apt-icon-btn apt-icon-btn--del" onClick={() => onDeleteRoom(room.id)} title="Delete room">
-          <Trash2 size={13} />
-        </button>
+        <InlineEdit value={room.name} onSave={name => onUpdateRoom(room.id, name)} readOnly={readOnly} />
+        {!readOnly && (
+          <button className="apt-icon-btn apt-icon-btn--del" onClick={() => onDeleteRoom(room.id)} title="Delete room">
+            <Trash2 size={13} />
+          </button>
+        )}
       </div>
       <div className="apt-beds">
         {roomPersons.map(person => (
-          <div key={person.id} className={`apt-bed${!person.name ? ' apt-bed--empty' : ''}`}>
-            <Bed size={15} className="apt-bed-icon" />
-            <InlineEdit value={person.name || 'Empty'} onSave={name => onUpdatePerson(person.id, name)} />
-            <button className="apt-bed-del" onClick={() => onDeletePerson(person.id)} title="Remove person">
-              <Trash2 size={11} />
-            </button>
+          <div
+            key={person.id}
+            className={`apt-bed${!person.name || !person.is_active ? ' apt-bed--empty' : ''}`}
+            onClick={() => onOpenPerson(person.id)}
+            title="Click to manage"
+          >
+            <User size={14} className="apt-bed-icon" />
+            <span className="vi-label">{person.name && person.is_active ? person.name : 'Empty'}</span>
           </div>
         ))}
-        <button className="apt-add-bed" onClick={() => onAddPerson(room.property_id, room.floor_id, room.id)} title="Add person">
-          <Plus size={13} /> Bed
-        </button>
+        {!readOnly && (
+          <button className="apt-add-bed" onClick={() => onAddPerson(room.property_id, room.floor_id, room.id)} title="Add person">
+            <Plus size={13} /> Bed
+          </button>
+        )}
       </div>
     </div>
   )
 }
 
-function FloorSection({ floor, rooms, persons, onAddRoom, onUpdateFloor, onDeleteFloor, onAddPerson, onUpdateRoom, onDeleteRoom, onUpdatePerson, onDeletePerson }) {
+function FloorSection({ floor, rooms, persons, onOpenPerson, onAddPerson, onUpdateRoom, onDeleteRoom, onDeleteFloor, onAddRoom, onUpdateFloor, readOnly }) {
   const floorRooms = rooms.filter(r => r.floor_id === floor.id)
 
   return (
     <div className="apt-floor">
       <div className="apt-floor-label">
         <span className="apt-floor-dot" />
-        <InlineEdit value={floor.name} onSave={name => onUpdateFloor(floor.id, name)} />
+        <InlineEdit value={floor.name} onSave={name => onUpdateFloor(floor.id, name)} readOnly={readOnly} />
         <span className="apt-floor-count">{floorRooms.length} room{floorRooms.length !== 1 ? 's' : ''}</span>
-        <button className="apt-icon-btn apt-icon-btn--del" onClick={() => onDeleteFloor(floor.id)} title="Delete floor">
-          <Trash2 size={14} />
-        </button>
+        {!readOnly && (
+          <button className="apt-icon-btn apt-icon-btn--del" onClick={() => onDeleteFloor(floor.id)} title="Delete floor">
+            <Trash2 size={14} />
+          </button>
+        )}
       </div>
       <div className="apt-units">
         {floorRooms.map(room => (
@@ -101,22 +117,24 @@ function FloorSection({ floor, rooms, persons, onAddRoom, onUpdateFloor, onDelet
             key={room.id}
             room={room}
             persons={persons}
+            onOpenPerson={onOpenPerson}
             onAddPerson={onAddPerson}
             onUpdateRoom={onUpdateRoom}
             onDeleteRoom={onDeleteRoom}
-            onUpdatePerson={onUpdatePerson}
-            onDeletePerson={onDeletePerson}
+            readOnly={readOnly}
           />
         ))}
-        <button className="apt-add-unit" onClick={() => onAddRoom(floor.property_id, floor.id)} title="Add room">
-          <Plus size={16} /> Room
-        </button>
+        {!readOnly && (
+          <button className="apt-add-unit" onClick={() => onAddRoom(floor.property_id, floor.id)} title="Add room">
+            <Plus size={16} /> Room
+          </button>
+        )}
       </div>
     </div>
   )
 }
 
-export default function VisualPropertyBuilder() {
+export default function VisualPropertyBuilder({ readOnly = false }) {
   const { user } = useAuth()
   const confirm = useConfirm()
   const [properties, setProperties] = useState([])
@@ -125,6 +143,7 @@ export default function VisualPropertyBuilder() {
   const [persons, setPersons] = useState([])
   const [loading, setLoading] = useState(true)
   const [inputModal, setInputModal] = useState({ open: false, title: '', placeholder: '', onCreate: null })
+  const [selectedPerson, setSelectedPerson] = useState(null)
   const [collapsed, setCollapsed] = useState(() => {
     try {
       const saved = localStorage.getItem('aptCollapsed')
@@ -155,7 +174,7 @@ export default function VisualPropertyBuilder() {
       fetchProperties(user.id),
       fetchAllFloors(user.id),
       fetchAllRooms(user.id),
-      fetchPersons(user.id),
+      fetchPersonsWithRooms(user.id),
     ]).then(([p, f, r, pe]) => {
       setProperties(p)
       setFloors(f)
@@ -166,6 +185,15 @@ export default function VisualPropertyBuilder() {
   }
 
   useEffect(load, [user.id])
+
+  const handleOpenPerson = (personId) => {
+    const person = persons.find(p => p.id === personId)
+    if (person) setSelectedPerson(person)
+  }
+
+  const handlePersonChange = () => {
+    load()
+  }
 
   const handleAddProperty = () => {
     openInputModal('Add Property', 'e.g. My Homestay', async (name) => {
@@ -220,6 +248,7 @@ export default function VisualPropertyBuilder() {
       setRooms([r])
       const p = await createPerson({ userId: user.id, propertyId: pid, floorId: f.id, roomId: r.id, name: '', phone: '' })
       setPersons([p])
+      setSelectedPerson(p)
     })
 
   const demoHandleEditName = async (name) => {
@@ -266,30 +295,17 @@ export default function VisualPropertyBuilder() {
     setPersons(prev => prev.filter(p => p.room_id !== id))
   }
 
-  const handleAddPerson = (propertyId, floorId, roomId) => {
-    openInputModal('Add Person', 'e.g. John', async (name) => {
-      const data = await createPerson({ userId: user.id, propertyId, floorId, roomId, name: name || '', phone: '' })
-      setPersons(prev => [...prev, data])
-    })
+  const handleAddPerson = async (propertyId, floorId, roomId) => {
+    const data = await createPerson({ userId: user.id, propertyId, floorId, roomId, name: '', phone: '' })
+    setPersons(prev => [...prev, data])
   }
-  const handleUpdatePerson = async (id, name) => {
-    await updatePerson(id, { name })
-    setPersons(prev => prev.map(p => p.id === id ? { ...p, name } : p))
-  }
-  const handleDeletePerson = async (id) => {
-    const ok = await confirm('Remove this person?')
-    if (!ok) return
-    await deletePerson(id)
-    setPersons(prev => prev.filter(p => p.id !== id))
-  }
-
-  if (loading) return <p className="text-muted">Loading...</p>
+  if (loading) return <Loader />
 
   return (
     <div className="apt-builder">
 
       <div className="apt-list">
-        {properties.length === 0 && (
+        {!readOnly && properties.length === 0 && (
           <div className="apt-building apt-building--demo">
             <div className="apt-roof-edge" />
             <div className="apt-roof-body">
@@ -319,8 +335,8 @@ export default function VisualPropertyBuilder() {
                         </div>
                         <div className="apt-beds">
                           {demoPersons.filter(p => p.room_id === room.id).map(person => (
-                            <div key={person.id} className="apt-bed apt-bed--empty">
-                              <Bed size={15} className="apt-bed-icon" />
+                            <div key={person.id} className="apt-bed apt-bed--empty" onClick={demoHandleAddPerson} title="Add occupant">
+                              <User size={14} className="apt-bed-icon" />
                               <span className="vi-label">Empty</span>
                             </div>
                           ))}
@@ -352,7 +368,7 @@ export default function VisualPropertyBuilder() {
                 <div className="apt-roof-edge" />
                 <div className="apt-roof-body">
                   <Building2 size={20} className="apt-roof-icon" />
-                  <InlineEdit value={property.name} onSave={name => handleUpdateProperty(property.id, name)} />
+                  <InlineEdit value={property.name} onSave={name => handleUpdateProperty(property.id, name)} readOnly={readOnly} />
                   <span className="apt-roof-badge">{property.type}</span>
                   <span className="apt-roof-meta">{propertyFloors.length} floor{propertyFloors.length !== 1 ? 's' : ''}</span>
                   <button
@@ -362,9 +378,11 @@ export default function VisualPropertyBuilder() {
                   >
                     <ChevronDown size={16} className={`apt-chevron ${collapsed.has(property.id) ? 'apt-chevron--collapsed' : ''}`} />
                   </button>
-                  <button className="apt-icon-btn apt-icon-btn--del" onClick={() => handleDeleteProperty(property.id)} title="Delete building">
-                    <Trash2 size={15} />
-                  </button>
+                  {!readOnly && (
+                    <button className="apt-icon-btn apt-icon-btn--del" onClick={() => handleDeleteProperty(property.id)} title="Delete building">
+                      <Trash2 size={15} />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -376,19 +394,21 @@ export default function VisualPropertyBuilder() {
                       floor={floor}
                       rooms={rooms}
                       persons={persons}
-                      onAddRoom={handleAddRoom}
+                      onOpenPerson={handleOpenPerson}
+                      onAddPerson={handleAddPerson}
                       onUpdateFloor={handleUpdateFloor}
                       onDeleteFloor={handleDeleteFloor}
-                      onAddPerson={handleAddPerson}
+                      onAddRoom={handleAddRoom}
                       onUpdateRoom={handleUpdateRoom}
                       onDeleteRoom={handleDeleteRoom}
-                      onUpdatePerson={handleUpdatePerson}
-                      onDeletePerson={handleDeletePerson}
+                      readOnly={readOnly}
                     />
                   ))}
-                  <button className="apt-add-floor" onClick={() => handleAddFloor(property.id)} title="Add floor">
-                    <Plus size={18} /> Add Floor
-                  </button>
+                  {!readOnly && (
+                    <button className="apt-add-floor" onClick={() => handleAddFloor(property.id)} title="Add floor">
+                      <Plus size={18} /> Add Floor
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -396,9 +416,11 @@ export default function VisualPropertyBuilder() {
         })}
       </div>
 
-      <button className="apt-add-building" onClick={handleAddProperty}>
-        <Plus size={20} /> Add Property
-      </button>
+      {!readOnly && (
+        <button className="apt-add-building" onClick={handleAddProperty}>
+          <Plus size={20} /> Add Property
+        </button>
+      )}
 
       <InputModal
         open={inputModal.open}
@@ -410,6 +432,15 @@ export default function VisualPropertyBuilder() {
         }}
         onCancel={closeInputModal}
       />
+
+      {selectedPerson && (
+        <PersonDetailModal
+          person={selectedPerson}
+          userId={user.id}
+          onClose={() => setSelectedPerson(null)}
+          onPersonChange={handlePersonChange}
+        />
+      )}
     </div>
   )
 }

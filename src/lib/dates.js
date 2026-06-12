@@ -1,39 +1,31 @@
-/**
- * Format a date string/object to a readable date string.
- * @param {string|Date} date - ISO string or Date object
- * @param {object} [options] - Intl.DateTimeFormat options
- * @returns {string} Formatted date
- */
-export function formatDate(date, options = {}) {
-  const d = date instanceof Date ? date : new Date(date)
-  if (isNaN(d.getTime())) return '—'
-
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    ...options,
-  })
+function pad(n) {
+  return String(n).padStart(2, '0')
 }
 
 /**
- * Format a date with time.
- * @param {string|Date} date
- * @param {object} [options]
- * @returns {string}
+ * Format a date string/object to dd-mm-yyyy.
+ * @param {string|Date} date - ISO string or Date object
+ * @returns {string} Formatted date
  */
-export function formatDateTime(date, options = {}) {
+export function formatDate(date) {
   const d = date instanceof Date ? date : new Date(date)
   if (isNaN(d.getTime())) return '—'
 
-  return d.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    ...options,
-  })
+  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`
+}
+
+/**
+ * Format a date with time to dd-mm-yyyy, HH:MM AM/PM.
+ * @param {string|Date} date
+ * @returns {string}
+ */
+export function formatDateTime(date) {
+  const d = date instanceof Date ? date : new Date(date)
+  if (isNaN(d.getTime())) return '—'
+
+  const datePart = `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`
+  const timePart = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  return `${datePart}, ${timePart}`
 }
 
 /**
@@ -84,7 +76,9 @@ export function formatRelative(date) {
  * @returns {string}
  */
 export function memberSince(date) {
-  return formatDate(date, { year: 'numeric', month: 'long', day: 'numeric' })
+  const d = date instanceof Date ? date : new Date(date)
+  if (isNaN(d.getTime())) return '—'
+  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`
 }
 
 /**

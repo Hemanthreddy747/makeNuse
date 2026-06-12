@@ -6,15 +6,15 @@ import logo from "../../assets/logo.png"
 
 const navItems = [
   { id: 0, to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { id: 1, to: "/add-new", icon: Plus, label: "Add New" },
-  { id: 2, to: "/manage", icon: List, label: "Manage" },
+  { id: 1, to: "/manage", icon: List, label: "Manage" },
+  { id: 2, to: "/create", icon: Plus, label: "Create" },
   { id: 3, to: "/profile", icon: Settings, label: "Profile" },
 ]
 
 const pathToId = {
   "/dashboard": 0,
-  "/add-new": 1,
-  "/manage": 2,
+  "/manage": 1,
+  "/create": 2,
   "/profile": 3,
 }
 

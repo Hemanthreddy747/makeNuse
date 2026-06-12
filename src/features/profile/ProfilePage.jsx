@@ -1,5 +1,6 @@
 import { LogOut } from 'lucide-react'
 import { useAuth } from '../../context/AuthProvider'
+import { formatDate, formatDateTime } from '../../lib/dates'
 
 export default function ProfilePage() {
   const { user, signInWithGoogle, signOut } = useAuth()
@@ -7,20 +8,8 @@ export default function ProfilePage() {
   const displayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email
   const avatarUrl = user.user_metadata?.avatar_url
   const provider = user.app_metadata?.provider || 'email'
-  const memberSince = new Date(user.created_at).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-  const lastSignIn = user.last_sign_in_at
-    ? new Date(user.last_sign_in_at).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    : '—'
+  const memberSince = formatDate(user.created_at)
+  const lastSignIn = user.last_sign_in_at ? formatDateTime(user.last_sign_in_at) : '—'
 
   const identities = user.identities || []
 

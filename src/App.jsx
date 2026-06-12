@@ -10,8 +10,9 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import LoginModal from './components/ui/LoginModal'
 import DashboardPage from './features/dashboard/DashboardPage'
 import ProfilePage from './features/profile/ProfilePage'
-import AddNewPage from './features/add-new/AddNewPage'
+import CreatePage from './features/add-new/AddNewPage'
 import ManagePage from './features/manage/ManagePage'
+import Loader from './components/ui/Loader'
 import { useEffect } from 'react'
 import { isSupabaseConfigured } from './lib/supabaseClient'
 import './App.css'
@@ -42,7 +43,7 @@ function ForgotPasswordRoute() {
     navigate('/', { replace: true })
   }, [loading, user, isRecoveryMode, openForgotPassword, navigate])
 
-  if (loading) return <div className="app-shell"><p>Loading...</p></div>
+  if (loading) return <div className="app-shell"><Loader /></div>
   if (user && isRecoveryMode) return <ForgotPasswordPage />
   return null
 }
@@ -56,7 +57,7 @@ function AppRoutes() {
 
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/add-new" element={<AddNewPage />} />
+        <Route path="/create" element={<CreatePage />} />
         <Route path="/manage" element={<ManagePage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
