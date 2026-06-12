@@ -4,7 +4,7 @@ import {
   fetchPersonsPaginated, fetchPersons, deletePerson, updatePerson,
   fetchRents, deleteRent, updateRent, fetchAllRooms,
 } from '../../lib/rentals'
-import { Building2, Users, Receipt, Clock, Trash2, X, Check, Phone, Mail, Filter, ChevronDown, ChevronUp, IndianRupee, AlertCircle, Home } from 'lucide-react'
+import { Building2, Users, Receipt, Clock, Trash2, X, Check, Phone, Mail, Filter, ChevronDown, ChevronUp, IndianRupee, Home } from 'lucide-react'
 import { useConfirm } from '../../context/ConfirmContext'
 import { formatDate } from '../../lib/dates'
 import VisualPropertyBuilder from '../../components/ui/VisualPropertyBuilder'
@@ -98,7 +98,7 @@ function StatCard({ icon: Icon, label, value, accent }) {
   return (
     <div className={`stat-card stat-${accent}`}>
       <div className="stat-card-top">
-        <Icon size={24} />
+        {Icon && <Icon size={20} />}
         <span className="stat-value">{value}</span>
       </div>
       <span className="stat-label">{label}</span>
@@ -115,10 +115,10 @@ function StatsGrid({ persons, rents }) {
 
   return (
     <div className="stats-grid">
-      <StatCard icon={Users} label="Filled Beds" value={filledBeds} accent="success" />
-      <StatCard icon={Home} label="Empty Beds" value={emptyBeds} accent="warning" />
-      <StatCard icon={IndianRupee} label="Collected" value={'\u20B9' + collected} accent="success" />
-      <StatCard icon={AlertCircle} label="Due" value={'\u20B9' + due} accent="danger" />
+      <StatCard icon={Users} label="Filled" value={filledBeds} accent="success" />
+      <StatCard icon={Users} label="Empty" value={emptyBeds} accent="warning" />
+      <StatCard label="Collected" value={'\u20B9' + collected} accent="success" />
+      <StatCard label="Due" value={'\u20B9' + due} accent="danger" />
     </div>
   )
 }

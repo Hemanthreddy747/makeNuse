@@ -989,19 +989,21 @@ button:disabled {
 .page-manage .stat-card-top {
   gap: var(--spacing-xs);
   margin-bottom: 0;
+  justify-content: flex-end;
 }
 
 .page-manage .stat-card-top .stat-value {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-2xl);
 }
 
 .page-manage .stat-card-top svg {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
 }
 
 .page-manage .stat-label {
-  font-size: 0.625rem;
+  font-size: var(--font-size-xs);
+  text-align: right;
 }
 
 /* ═══════════════════════════════════════════════════════
