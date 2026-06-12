@@ -1,6 +1,9 @@
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { Calendar } from 'lucide-react'
+import { createPortal } from 'react-dom'
+
+const PopperContainer = ({ children }) => createPortal(children, document.body)
 
 export default function DatePickerField({ value, onChange, className = '', minDate, maxDate, ...props }) {
   const date = value ? new Date(value + 'T00:00:00') : null
@@ -19,6 +22,7 @@ export default function DatePickerField({ value, onChange, className = '', minDa
         className="date-picker-input"
         wrapperClassName="date-picker-wrapper"
         popperPlacement="bottom-start"
+        popperContainer={PopperContainer}
         minDate={minDate}
         maxDate={maxDate}
         {...props}

@@ -2334,6 +2334,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  overflow: visible;
 }
 
 /* ── Fields ──────────────────────────── */
@@ -2501,7 +2502,7 @@ button:disabled {
 }
 
 .react-datepicker-popper {
-  z-index: 100;
+  z-index: 9999;
 }
 
 .react-datepicker-popper[data-placement^=bottom] {
@@ -2727,31 +2728,24 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: #fff;
+  padding: 4px;
+  background: none;
+  border: none;
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: all 0.12s;
+  transition: color 0.15s;
 }
 
 .pd-action-icon:hover {
-  border-color: var(--color-primary-border);
-  color: var(--color-primary);
+  color: var(--color-text-muted);
 }
 
 .pd-action-icon.paid:hover {
-  border-color: var(--color-success-border);
-  background: var(--color-success-light);
-  color: var(--color-success);
+  color: var(--color-text-muted);
 }
 
 .pd-action-icon.danger:hover {
-  border-color: var(--color-danger-border);
-  background: var(--color-danger-light);
-  color: var(--color-danger);
+  color: var(--color-text-muted);
 }
 
 /* ── Footer ──────────────────────────── */

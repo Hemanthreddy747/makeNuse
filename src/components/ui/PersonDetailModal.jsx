@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { X, Trash2, Plus, Check, Phone, Calendar, IndianRupee, LogOut, Undo2, Paperclip, Camera } from 'lucide-react'
+import { X, Trash2, Plus, Check, Phone, Calendar, IndianRupee, LogOut, Undo2, Paperclip, Camera, Download } from 'lucide-react'
 import { useConfirm } from '../../context/ConfirmContext'
 import {
   updatePerson, deletePerson, permanentlyDeletePerson,
   fetchRentsByPerson, createRent, updateRent, deleteRent,
   fetchRentTypes,
-  fetchPersonDocuments, uploadPersonDocument, deletePersonDocument,
+  fetchPersonDocuments, uploadPersonDocument, deletePersonDocument, getPersonDocumentUrl,
 } from '../../lib/rentals'
 import { formatDate } from '../../lib/dates'
 import DatePicker from './DatePicker'
@@ -277,6 +277,15 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
     setDocuments(prev => prev.filter(d => d.id !== id))
   }
 
+  const handleDownloadDocument = async (filePath) => {
+    try {
+      const url = await getPersonDocumentUrl(filePath)
+      window.open(url, '_blank')
+    } catch (err) {
+      alert('Failed to open document')
+    }
+  }
+
   return (
     <div className="pd-overlay" onClick={onClose}>
       <div className="pd-modal" onClick={e => e.stopPropagation()}>
@@ -350,9 +359,14 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                       <div key={doc.id} className="pd-doc-item">
                         <Paperclip size={13} className="pd-doc-icon" />
                         <span className="pd-doc-name">{doc.file_name}</span>
-                        <button className="pd-action-icon danger" onClick={() => handleDeleteDocument(doc.id, doc.file_path)} title="Delete">
-                          <Trash2 size={12} />
-                        </button>
+                        <div className="pd-doc-actions">
+                          <button className="pd-action-icon" onClick={() => handleDownloadDocument(doc.file_path)} title="Download">
+                            <Download size={12} />
+                          </button>
+                          <button className="pd-action-icon danger" onClick={() => handleDeleteDocument(doc.id, doc.file_path)} title="Delete">
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

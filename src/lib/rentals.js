@@ -426,3 +426,9 @@ export async function deletePersonDocument(id, filePath) {
   const { error } = await supabase.from('person_documents').delete().eq('id', id)
   if (error) throw error
 }
+
+export async function getPersonDocumentUrl(filePath) {
+  const { data, error } = await supabase.storage.from('person-documents').createSignedUrl(filePath, 60)
+  if (error) throw error
+  return data.signedUrl
+}
