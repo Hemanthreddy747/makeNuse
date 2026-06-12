@@ -134,7 +134,7 @@ function FloorSection({ floor, rooms, persons, onOpenPerson, onAddPerson, onUpda
   )
 }
 
-export default function VisualPropertyBuilder({ readOnly = false }) {
+export default function VisualPropertyBuilder({ readOnly = false, collapsed: collapsedProp, onToggleCollapse }) {
   const { user } = useAuth()
   const confirm = useConfirm()
   const [properties, setProperties] = useState([])
@@ -144,7 +144,9 @@ export default function VisualPropertyBuilder({ readOnly = false }) {
   const [loading, setLoading] = useState(true)
   const [inputModal, setInputModal] = useState({ open: false, title: '', placeholder: '', onCreate: null })
   const [selectedPerson, setSelectedPerson] = useState(null)
-  const [collapsed, setCollapsed] = useState(() => {
+
+  const hasExternalCollapse = collapsedProp !== undefined
+  const [internalCollapsed, setInternalCollapsed] = useState(() => {
     try {
       const saved = localStorage.getItem('aptCollapsed')
       return saved ? new Set(JSON.parse(saved)) : new Set()
@@ -153,14 +155,17 @@ export default function VisualPropertyBuilder({ readOnly = false }) {
     }
   })
 
-  const toggleCollapse = (propertyId) => {
-    setCollapsed(prev => {
-      const next = new Set(prev)
-      if (next.has(propertyId)) next.delete(propertyId); else next.add(propertyId)
-      localStorage.setItem('aptCollapsed', JSON.stringify([...next]))
-      return next
-    })
-  }
+  const collapsed = hasExternalCollapse ? collapsedProp : internalCollapsed
+  const toggleCollapse = hasExternalCollapse
+    ? onToggleCollapse
+    : (propertyId) => {
+      setInternalCollapsed(prev => {
+        const next = new Set(prev)
+        if (next.has(propertyId)) next.delete(propertyId); else next.add(propertyId)
+        localStorage.setItem('aptCollapsed', JSON.stringify([...next]))
+        return next
+      })
+    }
 
   const openInputModal = (title, placeholder, onCreate) => {
     setInputModal({ open: true, title, placeholder, onCreate })

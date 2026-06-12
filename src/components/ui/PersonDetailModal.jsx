@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { X, Trash2, Plus, Check, Phone, Calendar, IndianRupee, LogOut, Undo2, Paperclip, Camera } from 'lucide-react'
 import { useConfirm } from '../../context/ConfirmContext'
 import {
-  updatePerson, deletePerson,
+  updatePerson, deletePerson, permanentlyDeletePerson,
   fetchRentsByPerson, createRent, updateRent, deleteRent,
   fetchRentTypes,
   fetchPersonDocuments, uploadPersonDocument, deletePersonDocument,
@@ -154,12 +154,18 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
   }
 
   const handleDeletePermanent = async () => {
-    const ok = await confirm(
-      `Remove "${person.name}" from this room? The bed will show as empty.`
-    )
-    if (!ok) return
-    await updatePerson(person.id, { name: '' })
-    await deletePerson(person.id)
+    if (person.name) {
+      const ok = await confirm(
+        `Remove "${person.name}" from this room? The bed will show as empty.`
+      )
+      if (!ok) return
+      await updatePerson(person.id, { name: '' })
+      await deletePerson(person.id)
+    } else {
+      const ok = await confirm('Remove this empty bed?')
+      if (!ok) return
+      await permanentlyDeletePerson(person.id)
+    }
     if (onPersonChange) onPersonChange()
     onClose()
   }

@@ -964,11 +964,13 @@ button:disabled {
 .stat-success .stat-card-top { color: var(--color-success); }
 .stat-danger .stat-card-top { color: var(--color-danger); }
 .stat-info .stat-card-top { color: var(--color-info); }
+.stat-warning .stat-card-top { color: var(--color-warning); }
 
 .stat-primary .stat-label { color: var(--color-primary); }
 .stat-success .stat-label { color: var(--color-success); }
 .stat-danger .stat-label { color: var(--color-danger); }
 .stat-info .stat-label { color: var(--color-info); }
+.stat-warning .stat-label { color: var(--color-warning); }
 
 /* ─── Compact stats for Manage page ─── */
 .page-manage .stats-grid {

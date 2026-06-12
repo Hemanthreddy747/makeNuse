@@ -106,18 +106,17 @@ function StatCard({ icon: Icon, label, value, accent }) {
   )
 }
 
-function StatsGrid({ persons, rooms, rents }) {
-  const namedOccupants = persons.filter(p => p.name?.trim() && p.room_id)
-  const occupiedRooms = new Set(namedOccupants.map(p => p.room_id))
-  const filledBeds = namedOccupants.length
-  const emptyBeds = rooms.length - occupiedRooms.size
+function StatsGrid({ persons, rents }) {
+  const roomPersons = persons.filter(p => p.room_id)
+  const filledBeds = roomPersons.filter(p => p.name?.trim()).length
+  const emptyBeds = roomPersons.filter(p => !p.name?.trim()).length
   const collected = rents.filter(r => r.status === 'paid').reduce((s, r) => s + Number(r.amount), 0)
   const due = rents.filter(r => r.status !== 'paid').reduce((s, r) => s + Number(r.amount), 0)
 
   return (
     <div className="stats-grid">
-      <StatCard icon={Users} label="Filled Beds" value={filledBeds} accent="primary" />
-      <StatCard icon={Home} label="Empty Beds" value={emptyBeds} accent="info" />
+      <StatCard icon={Users} label="Filled Beds" value={filledBeds} accent="success" />
+      <StatCard icon={Home} label="Empty Beds" value={emptyBeds} accent="warning" />
       <StatCard icon={IndianRupee} label="Collected" value={'\u20B9' + collected} accent="success" />
       <StatCard icon={AlertCircle} label="Due" value={'\u20B9' + due} accent="danger" />
     </div>
@@ -148,6 +147,23 @@ export default function ManagePage() {
   const confirm = useConfirm()
   const [debouncedRoomSearch, setDebouncedRoomSearch] = useState('')
   const [debouncedUnassignedSearch, setDebouncedUnassignedSearch] = useState('')
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      const saved = localStorage.getItem('aptCollapsed')
+      return saved ? new Set(JSON.parse(saved)) : new Set()
+    } catch {
+      return new Set()
+    }
+  })
+
+  const toggleCollapse = (propertyId) => {
+    setCollapsed(prev => {
+      const next = new Set(prev)
+      if (next.has(propertyId)) next.delete(propertyId); else next.add(propertyId)
+      localStorage.setItem('aptCollapsed', JSON.stringify([...next]))
+      return next
+    })
+  }
 
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedRoomSearch(roomSearch); setRoomPage(0) }, 300)
@@ -224,7 +240,11 @@ export default function ManagePage() {
         <p className="page-subtitle">View and manage your properties, floors, rooms, and tenants</p>
       </div>
 
-      {!loading && <StatsGrid persons={allPersons} rooms={rooms} rents={rents} />}
+      {!loading && (() => {
+        const expandedPersons = allPersons.filter(p => !p.property_id || !collapsed.has(p.property_id))
+        const expandedRents = rents.filter(r => !r.property_id || !collapsed.has(r.property_id))
+        return <StatsGrid persons={expandedPersons} rents={expandedRents} />
+      })()}
 
       <div className="tab-bar">
         {tabs.map(tab => (
@@ -244,7 +264,7 @@ export default function ManagePage() {
           <Loader />
         ) : (
           <>
-            {activeTab === 'properties' && <VisualPropertyBuilder readOnly />}
+            {activeTab === 'properties' && <VisualPropertyBuilder readOnly collapsed={collapsed} onToggleCollapse={toggleCollapse} />}
 
             {activeTab === 'persons' && (
               <>
