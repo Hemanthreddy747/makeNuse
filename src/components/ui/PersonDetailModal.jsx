@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Trash2, Plus, Check, Phone, Calendar, IndianRupee, LogOut, Undo2, Paperclip, Camera, Download } from 'lucide-react'
+import { X, Trash2, Plus, Check, Phone, Calendar, IndianRupee, LogOut, Undo2, Paperclip, Camera, Download, User } from 'lucide-react'
 import { useConfirm } from '../../context/ConfirmContext'
 import {
   updatePerson, deletePerson, permanentlyDeletePerson,
@@ -302,8 +302,8 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
         <div className="pd-body">
           <section className="pd-card">
             <div className="pd-card-header">
-              <span className="pd-card-icon"><Phone size={14} /></span>
-              <h3>Person Details</h3>
+                          <span className="pd-card-icon"><User size={14} /></span>
+                          <h3>Person Details</h3>
             </div>
             <div className="pd-card-body">
               <div className="pd-field">
