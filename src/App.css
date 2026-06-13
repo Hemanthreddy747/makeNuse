@@ -2428,10 +2428,10 @@ button:disabled {
 }
 
 .pd-modal {
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-2xl);
   max-width: 520px;
   width: 100%;
   max-height: 90vh;
@@ -2535,7 +2535,7 @@ button:disabled {
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-surface);
   color: var(--color-text-muted);
   border: 1px solid var(--color-border);
   flex-shrink: 0;
@@ -2607,11 +2607,11 @@ button:disabled {
 .pd-field input,
 .pd-field select {
   padding: 8px 10px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-input-border);
   border-radius: 8px;
   font-size: var(--font-size-sm);
-  background: #fff;
-  color: var(--color-text);
+  background: var(--color-input-bg);
+  color: var(--color-input-text);
   outline: none;
   transition: border-color 0.15s;
   width: 100%;
@@ -2623,9 +2623,9 @@ button:disabled {
   position: relative;
   display: flex;
   align-items: center;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-input-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-input-bg);
   transition: border-color 0.15s;
   width: 100%;
   box-sizing: border-box;
@@ -2667,7 +2667,7 @@ button:disabled {
   background: transparent;
   font-size: var(--font-size-sm);
   font-family: inherit;
-  color: var(--color-text);
+  color: var(--color-input-text);
   outline: none;
   cursor: pointer;
   box-sizing: border-box;
@@ -2778,7 +2778,7 @@ button:disabled {
   align-items: center;
   gap: 6px;
   padding: 8px 10px;
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 8px;
 }
@@ -2786,11 +2786,12 @@ button:disabled {
 .pd-mini-form input,
 .pd-mini-form select {
   padding: 5px 8px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-input-border);
   border-radius: 6px;
   font-size: var(--font-size-sm);
   outline: none;
-  background: #fff;
+  background: var(--color-input-bg);
+  color: var(--color-input-text);
   min-width: 0;
 }
 
@@ -2917,7 +2918,7 @@ button:disabled {
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   transition: border-color 0.12s;
@@ -3484,7 +3485,7 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 8px 20px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
@@ -3494,6 +3495,8 @@ button:disabled {
   cursor: pointer;
   transition: all 0.12s;
   line-height: 1.4;
+  margin-top: 10px;
+  margin-right: 10px;;
 }
 
 .rtt-btn:hover {

@@ -49,6 +49,10 @@
   --color-text-muted: #64748b;
   --color-text-light: #94a3b8;
 
+  --color-input-bg: #ffffff;
+  --color-input-text: #0f172a;
+  --color-input-border: #d1d5db;
+
   /* ── Semantic — Danger ──────────────── */
   --color-danger: #dc2626;
   --color-danger-hover: #b91c1c;
@@ -167,6 +171,10 @@
   --color-text-secondary: #cbd5e1;
   --color-text-muted: #94a3b8;
   --color-text-light: #64748b;
+
+  --color-input-bg: #f1f5f9;
+  --color-input-text: #0f172a;
+  --color-input-border: #475569;
 
   --color-danger: #fca5a5;
   --color-danger-hover: #f87171;
