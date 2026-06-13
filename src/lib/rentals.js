@@ -539,6 +539,46 @@ export async function uploadPersonDocument({ userId, personId, file }) {
   return data
 }
 
+/* ── Property Events ──────────────────── */
+
+export async function logEvent({ userId, propertyId, personId, eventType, description, metadata = {} }) {
+  const { data, error } = await supabase
+    .from('property_events')
+    .insert({
+      user_id: userId,
+      property_id: propertyId || null,
+      person_id: personId || null,
+      event_type: eventType,
+      description,
+      metadata,
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function fetchEvents(userId, { limit = 100, offset = 0 } = {}) {
+  const { data, error, count } = await supabase
+    .from('property_events')
+    .select('*, property:property_id(name), person:person_id(name)', { count: 'exact' })
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
+  if (error) throw error
+  return { data, count }
+}
+
+export async function deleteEvent(id) {
+  const { error } = await supabase.from('property_events').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteAllEvents(userId) {
+  const { error } = await supabase.from('property_events').delete().eq('user_id', userId)
+  if (error) throw error
+}
+
 export async function deletePersonDocument(id, filePath) {
   await supabase.storage.from('person-documents').remove([filePath])
   const { error } = await supabase.from('person_documents').delete().eq('id', id)

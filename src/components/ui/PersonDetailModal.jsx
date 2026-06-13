@@ -7,6 +7,7 @@ import {
   createRentPayment,
   fetchRentTypes,
   fetchPersonDocuments, uploadPersonDocument, deletePersonDocument, getPersonDocumentUrl,
+  logEvent,
 } from '../../lib/rentals'
 import { formatDateTime } from '../../lib/dates'
 import DatePicker from './DatePicker'
@@ -136,6 +137,12 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
         rent_amount: rentAmount ? parseFloat(rentAmount) : null,
         ...overrides,
       })
+      const finalName = name || person.name
+      if (!person.name && name) {
+        logEvent({ userId, propertyId: person.property_id, personId: person.id, eventType: 'person_added', description: `"${name}" added` }).catch(() => {})
+      } else if (finalName) {
+        logEvent({ userId, propertyId: person.property_id, personId: person.id, eventType: 'person_updated', description: `"${finalName}" details updated` }).catch(() => {})
+      }
       if (onPersonChange) onPersonChange()
     } catch (err) {
       alert(err.message)
@@ -151,6 +158,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
       is_active: false, phone: '',
       move_in_date: null, rent_type_id: null, rent_amount: null,
     })
+    logEvent({ userId, propertyId: person.property_id, personId: person.id, eventType: 'person_checked_out', description: `"${person.name}" checked out` }).catch(() => {})
     if (onPersonChange) onPersonChange()
     onClose()
   }
@@ -162,10 +170,12 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
       )
       if (!ok) return
       await deletePerson(person.id)
+      logEvent({ userId, propertyId: person.property_id, personId: person.id, eventType: 'person_deactivated', description: `"${person.name}" moved to past` }).catch(() => {})
     } else {
       const ok = await confirm('Remove this empty bed?')
       if (!ok) return
       await permanentlyDeletePerson(person.id)
+      logEvent({ userId, propertyId: person.property_id, personId: person.id, eventType: 'person_removed', description: 'Empty bed removed' }).catch(() => {})
     }
     if (onPersonChange) onPersonChange()
     onClose()
@@ -267,6 +277,8 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
 
         results.push({ ...obligation, payments: [{ amount, payment_date: paidDate }] })
       }
+      const totalPeriods = periods.length
+      logEvent({ userId, propertyId: person.property_id, personId: person.id, eventType: 'payment_made', description: `Payment of ₹${amount} recorded for "${person.name}" (${totalPeriods} period${totalPeriods > 1 ? 's' : ''})`, metadata: { amount, periods: totalPeriods } }).catch(() => {})
       setRents(prev => [...results, ...prev])
       setAddingRent(false)
     } catch (err) {
@@ -289,6 +301,9 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
       })
     }
     await updateRentObligation(obligationId, { status: next })
+    const eventType = next === 'paid' ? 'payment_made' : 'payment_reverted'
+    const desc = next === 'paid' ? `Payment marked paid for "${person.name}"` : `Payment reverted to pending for "${person.name}"`
+    logEvent({ userId, propertyId: person.property_id, personId: person.id, eventType, description: desc }).catch(() => {})
     setRents(prev => prev.map(r => {
       if (r.id !== obligationId) return r
       if (currentStatus === 'cancelled') return { ...r, status: next }
@@ -303,6 +318,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
     const ok = await confirm('Delete this rent record?')
     if (!ok) return
     await cancelRentObligation(obligationId)
+    logEvent({ userId, propertyId: person.property_id, personId: person.id, eventType: 'payment_cancelled', description: `Rent record cancelled for "${person.name}"` }).catch(() => {})
     setRents(prev => prev.map(r => r.id === obligationId ? { ...r, status: 'cancelled' } : r))
   }
 

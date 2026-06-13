@@ -4,8 +4,10 @@ import {
   fetchPersonsPaginated, fetchPersons, deletePerson, updatePerson,
   fetchRentObligations,
   fetchAllRooms,
+  fetchEvents,
+  logEvent,
 } from '../../lib/rentals'
-import { Building2, Users, Clock, X, Check, Phone, ChevronDown, ChevronUp, IndianRupee } from 'lucide-react'
+import { Building2, Users, Clock, X, Check, Phone, ChevronDown, ChevronUp, IndianRupee, Plus, Trash2, DoorOpen, Bed, User, LogOut, RotateCcw, Undo2 } from 'lucide-react'
 import { formatDateTime } from '../../lib/dates'
 import VisualPropertyBuilder from '../../components/ui/VisualPropertyBuilder'
 import DataTable from '../../components/ui/DataTable'
@@ -91,6 +93,10 @@ export default function ManagePage() {
   const [loading, setLoading] = useState(true)
   const [selectedPerson, setSelectedPerson] = useState(null)
   const [showUnassigned, setShowUnassigned] = useState(false)
+  const [events, setEvents] = useState([])
+  const [eventsCount, setEventsCount] = useState(0)
+  const [eventsPage, setEventsPage] = useState(0)
+  const [eventsLoading, setEventsLoading] = useState(false)
   const PAGE_SIZE = 50
   const [debouncedRoomSearch, setDebouncedRoomSearch] = useState('')
   const [debouncedUnassignedSearch, setDebouncedUnassignedSearch] = useState('')
@@ -143,6 +149,18 @@ export default function ManagePage() {
 
   useEffect(load, [user.id, roomPage, unassignedPage, roomSort.by, roomSort.dir, unassignedSort.by, unassignedSort.dir, debouncedRoomSearch, debouncedUnassignedSearch])
 
+  useEffect(() => {
+    if (activeTab !== 'history') return
+    setEventsLoading(true)
+    fetchEvents(user.id, { limit: 50, offset: eventsPage * 50 })
+      .then(({ data, count }) => {
+        setEvents(data)
+        setEventsCount(count)
+        setEventsLoading(false)
+      })
+      .catch(() => setEventsLoading(false))
+  }, [user.id, activeTab, eventsPage])
+
   const handleRoomSort = (column) => {
     if (column === roomSort.by) {
       setRoomSort({ ...roomSort, dir: roomSort.dir === 'asc' ? 'desc' : 'asc' })
@@ -167,6 +185,10 @@ export default function ManagePage() {
 
   const handleUpdatePerson = async (id, fields) => {
     await updatePerson(id, fields); load()
+    const p = [...roomPersons, ...unassignedPersons].find(p => p.id === id)
+    if (fields.name && p?.name !== fields.name) {
+      logEvent({ userId: user.id, propertyId: p?.property_id, personId: id, eventType: 'person_updated', description: `"${fields.name}" name updated` }).catch(() => {})
+    }
   }
 
   return (
@@ -371,7 +393,100 @@ export default function ManagePage() {
               </>
             )}
 
-            {activeTab === 'history' && <></>}
+            {activeTab === 'history' && (
+              <div className="ev-table-wrapper">
+                <DataTable
+                  title="Event History"
+                  count={eventsCount}
+                  columns={[
+                    {
+                      key: 'icon',
+                      label: '',
+                      className: 'ev-col-icon',
+                      render: e => {
+                        const iconMap = {
+                          property_created: Building2,
+                          property_updated: Building2,
+                          property_deleted: Building2,
+                          floor_created: DoorOpen,
+                          floor_updated: DoorOpen,
+                          floor_deleted: DoorOpen,
+                          room_created: DoorOpen,
+                          room_updated: DoorOpen,
+                          room_deleted: DoorOpen,
+                          person_added: User,
+                          person_updated: User,
+                          person_deactivated: User,
+                          person_removed: User,
+                          person_checked_out: LogOut,
+                          payment_made: IndianRupee,
+                          payment_reverted: Undo2,
+                          payment_cancelled: RotateCcw,
+                        }
+                        const Icon = iconMap[e.event_type] || Clock
+                        return <Icon size={12} className="ev-icon" />
+                      },
+                    },
+                    {
+                      key: 'description',
+                      label: 'Event',
+                      className: 'ev-col-desc',
+                      render: e => (
+                        <div className="ev-desc">
+                          <span className="ev-text">{e.description}</span>
+                          {e.property?.name && <span className="ev-property">{e.property.name}</span>}
+                        </div>
+                      ),
+                    },
+                    {
+                      key: 'event_type',
+                      label: 'Type',
+                      className: 'ev-col-type',
+                      render: e => {
+                        const labels = {
+                          property_created: 'Created',
+                          property_updated: 'Renamed',
+                          property_deleted: 'Deleted',
+                          floor_created: 'Floors',
+                          floor_updated: 'Floors',
+                          floor_deleted: 'Floors',
+                          room_created: 'Rooms',
+                          room_updated: 'Rooms',
+                          room_deleted: 'Rooms',
+                          person_added: 'People',
+                          person_updated: 'People',
+                          person_deactivated: 'People',
+                          person_removed: 'People',
+                          person_checked_out: 'Checkout',
+                          payment_made: 'Payment',
+                          payment_reverted: 'Payment',
+                          payment_cancelled: 'Payment',
+                        }
+                        return <span className="ev-type">{labels[e.event_type] || e.event_type}</span>
+                      },
+                    },
+                    {
+                      key: 'created_at',
+                      label: 'Date & Time',
+                      className: 'ev-col-time',
+                      render: e => (
+                        <span className="ev-time">{formatDateTime(e.created_at)}</span>
+                      ),
+                    },
+                  ]}
+                  data={events}
+                  loading={eventsLoading}
+                  emptyMessage="No events yet."
+                />
+                {eventsCount > 50 && (
+                  <div className="pagination">
+                    <button disabled={eventsPage === 0} onClick={() => setEventsPage(eventsPage - 1)}>Previous</button>
+                    <span>Page {eventsPage + 1} of {Math.ceil(eventsCount / 50)}</span>
+                    <button disabled={(eventsPage + 1) * 50 >= eventsCount} onClick={() => setEventsPage(eventsPage + 1)}>Next</button>
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>

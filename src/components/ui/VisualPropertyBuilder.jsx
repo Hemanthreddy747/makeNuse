@@ -9,6 +9,7 @@ import {
   fetchAllFloors, createFloor, deleteFloor, updateFloor,
   fetchAllRooms, createRoom, deleteRoom, updateRoom,
   fetchPersonsWithRooms, createPerson,
+  logEvent,
 } from '../../lib/rentals'
 
 function InlineEdit({ value, onSave, readOnly, autoEdit, onAutoEditEnd }) {
@@ -210,19 +211,24 @@ export default function VisualPropertyBuilder({ readOnly = false, collapsed: col
     const data = await createProperty({ userId: user.id, name: 'New Property', type: 'pg', address: '' })
     setProperties(prev => [...prev, data])
     setAutoEditId(data.id)
+    logEvent({ userId: user.id, propertyId: data.id, eventType: 'property_created', description: `Property "${data.name}" created` }).catch(() => {})
   }
   const handleUpdateProperty = async (id, name) => {
+    const old = properties.find(p => p.id === id)
     await updateProperty(id, { name })
     setProperties(prev => prev.map(p => p.id === id ? { ...p, name } : p))
+    logEvent({ userId: user.id, propertyId: id, eventType: 'property_updated', description: `Property renamed from "${old?.name}" to "${name}"` }).catch(() => {})
   }
   const handleDeleteProperty = async (id) => {
     const ok = await confirm('Delete this property and everything under it?')
     if (!ok) return
+    const prop = properties.find(p => p.id === id)
     await deleteProperty(id)
     setProperties(prev => prev.filter(p => p.id !== id))
     setFloors(prev => prev.filter(f => f.property_id !== id))
     setRooms(prev => prev.filter(r => r.property_id !== id))
     setPersons(prev => prev.filter(p => p.property_id !== id))
+    logEvent({ userId: user.id, propertyId: id, eventType: 'property_deleted', description: `Property "${prop?.name}" deleted` }).catch(() => {})
   }
 
   const demoProp = { id: '__demo__', name: 'My Property', type: 'pg' }
@@ -272,40 +278,58 @@ export default function VisualPropertyBuilder({ readOnly = false, collapsed: col
     const data = await createFloor({ userId: user.id, propertyId, name: 'New Floor' })
     setFloors(prev => [data, ...prev])
     setAutoEditId(data.id)
+    const prop = properties.find(p => p.id === propertyId)
+    logEvent({ userId: user.id, propertyId, eventType: 'floor_created', description: `Floor "${data.name}" added in "${prop?.name}"` }).catch(() => {})
   }
   const handleUpdateFloor = async (id, name) => {
+    const old = floors.find(f => f.id === id)
     await updateFloor(id, { name })
     setFloors(prev => prev.map(f => f.id === id ? { ...f, name } : f))
+    const prop = properties.find(p => p.id === old?.property_id)
+    logEvent({ userId: user.id, propertyId: old?.property_id, eventType: 'floor_updated', description: `Floor renamed from "${old?.name}" to "${name}" in "${prop?.name}"` }).catch(() => {})
   }
   const handleDeleteFloor = async (id) => {
     const ok = await confirm('Delete this floor and its rooms?')
     if (!ok) return
+    const floor = floors.find(f => f.id === id)
     await deleteFloor(id)
     setFloors(prev => prev.filter(f => f.id !== id))
     setRooms(prev => prev.filter(r => r.floor_id !== id))
     setPersons(prev => prev.filter(p => p.floor_id !== id))
+    const prop = properties.find(p => p.id === floor?.property_id)
+    logEvent({ userId: user.id, propertyId: floor?.property_id, eventType: 'floor_deleted', description: `Floor "${floor?.name}" deleted from "${prop?.name}"` }).catch(() => {})
   }
 
   const handleAddRoom = async (propertyId, floorId) => {
     const data = await createRoom({ userId: user.id, propertyId, floorId, name: 'New Room' })
     setRooms(prev => [...prev, data])
     setAutoEditId(data.id)
+    const prop = properties.find(p => p.id === propertyId)
+    logEvent({ userId: user.id, propertyId, eventType: 'room_created', description: `Room "${data.name}" added in "${prop?.name}"` }).catch(() => {})
   }
   const handleUpdateRoom = async (id, name) => {
+    const old = rooms.find(r => r.id === id)
     await updateRoom(id, { name })
     setRooms(prev => prev.map(r => r.id === id ? { ...r, name } : r))
+    const prop = properties.find(p => p.id === old?.property_id)
+    logEvent({ userId: user.id, propertyId: old?.property_id, eventType: 'room_updated', description: `Room renamed from "${old?.name}" to "${name}" in "${prop?.name}"` }).catch(() => {})
   }
   const handleDeleteRoom = async (id) => {
     const ok = await confirm('Delete this room?')
     if (!ok) return
+    const room = rooms.find(r => r.id === id)
     await deleteRoom(id)
     setRooms(prev => prev.filter(r => r.id !== id))
     setPersons(prev => prev.filter(p => p.room_id !== id))
+    const prop = properties.find(p => p.id === room?.property_id)
+    logEvent({ userId: user.id, propertyId: room?.property_id, eventType: 'room_deleted', description: `Room "${room?.name}" deleted from "${prop?.name}"` }).catch(() => {})
   }
 
   const handleAddPerson = async (propertyId, floorId, roomId) => {
     const data = await createPerson({ userId: user.id, propertyId, floorId, roomId, name: '', phone: '' })
     setPersons(prev => [...prev, data])
+    const prop = properties.find(p => p.id === propertyId)
+    logEvent({ userId: user.id, propertyId, personId: data.id, eventType: 'person_added', description: `Bed added in "${prop?.name}"` }).catch(() => {})
   }
   if (loading) return <Loader />
 
