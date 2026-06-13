@@ -4,7 +4,7 @@ import { useConfirm } from '../../context/ConfirmContext'
 import {
   updatePerson, deletePerson, permanentlyDeletePerson,
   fetchRentObligationsByPerson, createRentObligation, updateRentObligation, cancelRentObligation,
-  createRentPayment,
+  createRentPayment, fetchRentPaymentsByObligation, deleteRentPayment,
   fetchRentTypes,
   fetchPersonDocuments, uploadPersonDocument, deletePersonDocument, getPersonDocumentUrl,
   logEvent,
@@ -157,6 +157,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
     await updatePerson(person.id, {
       is_active: false, phone: '',
       move_in_date: null, rent_type_id: null, rent_amount: null,
+      room_id: null, floor_id: null, property_id: null,
     })
     logEvent({ userId, propertyId: person.property_id, personId: person.id, eventType: 'person_checked_out', description: `"${person.name}" checked out` }).catch(() => {})
     if (onPersonChange) onPersonChange()
@@ -291,7 +292,13 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
   const handleUpdateRentStatus = async (obligationId, currentStatus) => {
     const next = currentStatus === 'paid' ? 'pending' : currentStatus === 'cancelled' ? 'pending' : 'paid'
     const today = new Date().toISOString()
-    if (next === 'paid') {
+
+    if (currentStatus === 'paid' && next === 'pending') {
+      const payments = await fetchRentPaymentsByObligation(obligationId)
+      if (payments.length > 0) {
+        await deleteRentPayment(payments[0].id)
+      }
+    } else if (next === 'paid') {
       await createRentPayment({
         obligationId,
         personId: person.id,
@@ -300,6 +307,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
         paymentDate: today,
       })
     }
+
     await updateRentObligation(obligationId, { status: next })
     const eventType = next === 'paid' ? 'payment_made' : 'payment_reverted'
     const desc = next === 'paid' ? `Payment marked paid for "${person.name}"` : `Payment reverted to pending for "${person.name}"`

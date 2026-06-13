@@ -37,10 +37,10 @@ export default function CreatePage() {
 
   return (
     <div className="page-create">
-      <div className="page-header">
+      {/* <div className="page-header">
         <h1>Create</h1>
-        {/* <p className="page-subtitle">Build your property and add occupants with rent</p> */}
-      </div>
+        <p className="page-subtitle">Build your property and add occupants with rent</p>
+      </div> */}
 
       <div className="tab-bar">
         {tabs.map(tab => (

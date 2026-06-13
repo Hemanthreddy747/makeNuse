@@ -380,7 +380,7 @@ button:disabled {
   flex-direction: column;
   align-items: center;
   padding: var(--spacing-2xl) var(--spacing-lg);
-  padding-top: 80px;
+  padding-top: 70px;
 }
 
 .app-content > div {
@@ -388,7 +388,7 @@ button:disabled {
 }
 
 .page-header {
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: 2%;
 }
 
 .page-header h1 {
@@ -414,7 +414,7 @@ button:disabled {
   z-index: 50;
   display: flex;
   justify-content: center;
-  padding: 12px 16px;
+  padding: 3px 0px;
   background: linear-gradient(to bottom, var(--color-surface), transparent);
   pointer-events: none;
 }
@@ -439,6 +439,8 @@ button:disabled {
   align-items: center;
   flex-shrink: 0;
   margin-right: auto;
+  scale: 1.2;
+  margin-left: 2%;
 }
 
 .floating-nav-logo img {
@@ -1067,7 +1069,7 @@ button:disabled {
 
   .app-content {
     padding: var(--spacing-lg) var(--spacing-md);
-    padding-top: 80px;
+    padding-top: 70px;
   }
 }
 
@@ -1307,7 +1309,7 @@ button:disabled {
 .tab-bar {
   display: flex;
   gap: var(--spacing-1);
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: 16px;
   padding: var(--spacing-1);
   background: var(--color-border-light);
   border-radius: var(--radius-xl);
@@ -1906,9 +1908,9 @@ button:disabled {
   padding: var(--spacing-2xl) var(--spacing-lg);
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
-  border: 1.5px dashed #CBD5E1;
+  border: 1.5px dashed #cbd5e1;
   border-radius: var(--radius-lg);
-  background: #F8FAFC;
+  background: #f8fafc;
 }
 
 .apt-empty-icon {
@@ -1920,18 +1922,20 @@ button:disabled {
 .apt-building {
   border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 6px rgba(0, 0, 0, 0.03);
-  border: 1px solid #E2E8F0;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 1px 6px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e2e8f0;
 }
 
 .apt-building--demo {
-  background: #EFF6FF;
+  background: #eff6ff;
 }
 .apt-building--demo .apt-body {
-  background: #F0F7FF;
+  background: #f0f7ff;
 }
 .apt-building--demo .apt-roof-body {
-  background: linear-gradient(135deg, #2563EB, #1D4ED8);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
 
 .apt-demo-badge {
@@ -1939,19 +1943,19 @@ button:disabled {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  background: #FBBF24;
-  color: #78350F;
+  background: #fbbf24;
+  color: #78350f;
   padding: 2px 8px;
   border-radius: var(--radius-pill);
 }
 
 .apt-floor--demo {
-  border-left: 3px solid #3B82F6;
-  background: #F0F7FF;
+  border-left: 3px solid #3b82f6;
+  background: #f0f7ff;
 }
 .apt-room--demo {
-  background: #EFF6FF;
-  border-left: 2px solid #60A5FA;
+  background: #eff6ff;
+  border-left: 2px solid #60a5fa;
 }
 
 /* ── Roof ── */
@@ -1960,7 +1964,7 @@ button:disabled {
   align-items: center;
   gap: var(--spacing-2);
   padding: 5px var(--spacing-md);
-  background: linear-gradient(135deg, #5B21B6, #4C1D95);
+  background: linear-gradient(135deg, #5b21b6, #4c1d95);
   color: #fff;
   font-weight: 700;
   font-size: var(--font-size-lg);
@@ -2040,26 +2044,26 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  background: #F1F5F9;
+  background: #f1f5f9;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* ── Single floor row ── */
 .apt-floor {
   background: #fff;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   border-radius: var(--radius-lg);
   padding: 3px var(--spacing-md);
   position: relative;
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
-  border-left: 3px solid #7C3AED;
+  border-left: 3px solid #7c3aed;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .apt-floor:hover {
-  border-color: #C4B5FD;
+  border-color: #c4b5fd;
   box-shadow:
     0 1px 4px rgba(124, 58, 237, 0.08),
     0 1px 2px rgba(0, 0, 0, 0.03);
@@ -2071,17 +2075,17 @@ button:disabled {
   gap: var(--spacing-2);
   margin-bottom: 1px;
   padding-bottom: 0;
-  border-bottom: 1px solid #E2E8F0;
+  border-bottom: 1px solid #e2e8f0;
   font-weight: 600;
   font-size: 14px;
-  color: #0F172A;
+  color: #0f172a;
 }
 
 .apt-floor-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #7C3AED;
+  background: #7c3aed;
   flex-shrink: 0;
 }
 
@@ -2092,8 +2096,8 @@ button:disabled {
 .apt-floor-count {
   font-size: 12px;
   font-weight: 500;
-  color: #64748B;
-  background: #F1F5F9;
+  color: #64748b;
+  background: #f1f5f9;
   padding: 0 6px;
   border-radius: var(--radius-pill);
 }
@@ -2108,8 +2112,8 @@ button:disabled {
 
 /* ── Individual apartment unit ── */
 .apt-room {
-  background: #F5F3FF;
-  border: 1px solid #C4B5FD;
+  background: #f5f3ff;
+  border: 1px solid #c4b5fd;
   border-radius: var(--radius-md);
   padding: 2px 5px;
   min-width: 140px;
@@ -2121,7 +2125,7 @@ button:disabled {
 }
 
 .apt-room:hover {
-  border-color: #A78BFA;
+  border-color: #a78bfa;
   box-shadow: 0 1px 4px rgba(167, 139, 250, 0.12);
 }
 
@@ -2132,15 +2136,15 @@ button:disabled {
   gap: 4px;
   padding-bottom: 0;
   margin-bottom: 0;
-  border-bottom: 1px solid #DDD6FE;
+  border-bottom: 1px solid #ddd6fe;
   font-size: 14px;
   font-weight: 600;
-  color: #4C1D95;
+  color: #4c1d95;
 }
 
 .apt-room-icon {
   flex-shrink: 0;
-  color: #7C3AED;
+  color: #7c3aed;
   opacity: 0.65;
 }
 
@@ -2167,12 +2171,12 @@ button:disabled {
   align-items: center;
   gap: 3px;
   padding: 2px 4px;
-  background: #F0FDF4;
-  border: 1px solid #86EFAC;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
   border-radius: 4px;
   font-size: 14px;
   font-weight: 500;
-  color: #16A34A;
+  color: #16a34a;
   cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2183,47 +2187,47 @@ button:disabled {
 }
 
 .apt-bed:hover {
-  border-color: #22C55E;
+  border-color: #22c55e;
   box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15);
 }
 
 .apt-bed--empty {
-  background: #FEF2F2;
-  border-color: #FCA5A5;
-  color: #DC2626;
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #dc2626;
 }
 
 .apt-bed--empty:hover {
-  border-color: #EF4444;
+  border-color: #ef4444;
   box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12);
 }
 
 .apt-bed--former {
-  background: #F3F4F6;
-  border-color: #D1D5DB;
-  color: #64748B;
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #64748b;
   cursor: default;
 }
 
 .apt-bed--former:hover {
-  border-color: #9CA3AF;
+  border-color: #9ca3af;
 }
 
 .apt-bed-dates {
   font-size: 12px;
-  color: #94A3B8;
+  color: #94a3b8;
   margin-left: auto;
   white-space: nowrap;
 }
 
 .apt-bed-icon {
   flex-shrink: 0;
-  color: #22C55E;
+  color: #22c55e;
   opacity: 0.7;
 }
 
 .apt-bed--empty .apt-bed-icon {
-  color: #EF4444;
+  color: #ef4444;
   opacity: 0.6;
 }
 
@@ -2247,10 +2251,10 @@ button:disabled {
   justify-content: center;
   gap: 2px;
   padding: 0 7px;
-  border: 1px dashed #D1D5DB;
+  border: 1px dashed #d1d5db;
   border-radius: 4px;
   background: transparent;
-  color: #94A3B8;
+  color: #94a3b8;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -2271,10 +2275,10 @@ button:disabled {
   justify-content: center;
   gap: 4px;
   padding: 3px 10px;
-  border: 1.5px dashed #D1D5DB;
+  border: 1.5px dashed #d1d5db;
   border-radius: var(--radius-md);
   background: transparent;
-  color: #94A3B8;
+  color: #94a3b8;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -2283,9 +2287,9 @@ button:disabled {
 }
 
 .apt-add-unit:hover {
-  border-color: #A78BFA;
-  color: #7C3AED;
-  background: #F5F3FF;
+  border-color: #a78bfa;
+  color: #7c3aed;
+  background: #f5f3ff;
 }
 
 /* ── Add floor ── */
@@ -2295,10 +2299,10 @@ button:disabled {
   justify-content: center;
   gap: var(--spacing-2);
   padding: 4px var(--spacing-md);
-  border: 1.5px dashed #D1D5DB;
+  border: 1.5px dashed #d1d5db;
   border-radius: var(--radius-lg);
   background: transparent;
-  color: #94A3B8;
+  color: #94a3b8;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -2307,9 +2311,9 @@ button:disabled {
 }
 
 .apt-add-floor:hover {
-  border-color: #7C3AED;
-  color: #7C3AED;
-  background: #F5F3FF;
+  border-color: #7c3aed;
+  color: #7c3aed;
+  background: #f5f3ff;
 }
 
 /* ── Add building ── */
@@ -2320,10 +2324,10 @@ button:disabled {
   gap: var(--spacing-2);
   margin-top: var(--spacing-lg);
   padding: 10px 24px;
-  border: 1.5px dashed #CBD5E1;
+  border: 1.5px dashed #cbd5e1;
   border-radius: var(--radius-xl);
-  background: #F8FAFC;
-  color: #64748B;
+  background: #f8fafc;
+  color: #64748b;
   font-size: var(--font-size-base);
   font-weight: 600;
   cursor: pointer;
@@ -2332,9 +2336,9 @@ button:disabled {
 }
 
 .apt-add-building:hover {
-  background: #EDE9FE;
-  border-color: #7C3AED;
-  color: #5B21B6;
+  background: #ede9fe;
+  border-color: #7c3aed;
+  color: #5b21b6;
   box-shadow: 0 1px 3px rgba(124, 58, 237, 0.1);
 }
 

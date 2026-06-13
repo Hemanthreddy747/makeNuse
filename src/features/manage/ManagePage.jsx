@@ -187,16 +187,16 @@ export default function ManagePage() {
     await updatePerson(id, fields); load()
     const p = [...roomPersons, ...unassignedPersons].find(p => p.id === id)
     if (fields.name && p?.name !== fields.name) {
-      logEvent({ userId: user.id, propertyId: p?.property_id, personId: id, eventType: 'person_updated', description: `"${fields.name}" name updated` }).catch(() => {})
+      logEvent({ userId: user.id, propertyId: p?.property_id, personId: id, eventType: 'person_updated', description: `"${fields.name}" name updated` }).catch(() => { })
     }
   }
 
   return (
     <div className="page-manage">
-      <div className="page-header">
+      {/* <div className="page-header">
         <h1>Manage</h1>
-        {/* <p className="page-subtitle">View and manage your properties, floors, rooms, and tenants</p> */}
-      </div>
+        <p className="page-subtitle">View and manage your properties, floors, rooms, and tenants</p>
+      </div> */}
 
       {!loading && (() => {
         const expandedPersons = allPersons.filter(p => !p.property_id || !collapsed.has(p.property_id))

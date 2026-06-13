@@ -18,10 +18,10 @@ export default function ProfilePage() {
 
   return (
     <div className="page-profile">
-      <div className="page-header">
+      {/* <div className="page-header">
         <h1>Profile</h1>
         <p className="page-subtitle">Manage your account and preferences</p>
-      </div>
+      </div> */}
 
       <div className="profile-layout">
         <div className="profile-sidebar">
