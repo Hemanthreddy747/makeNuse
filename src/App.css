@@ -3714,6 +3714,61 @@ button:disabled {
    EVENT HISTORY – compact & responsive
    ═══════════════════════════════════════════════════════ */
 
+.ev-filters {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.ev-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 4px 10px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.ev-search input {
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 12px;
+  color: var(--color-text);
+  width: 100%;
+}
+
+.ev-search svg {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.ev-date-range {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ev-date-range .date-picker {
+  min-width: 0;
+}
+
+.ev-date-range .date-picker-input {
+  width: 100px;
+  font-size: 11px;
+  padding: 4px 6px;
+}
+
+.ev-date-sep {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
 .ev-table-wrapper .dt-bar {
   margin-bottom: 4px;
 }

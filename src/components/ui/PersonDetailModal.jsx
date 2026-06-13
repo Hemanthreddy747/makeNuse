@@ -111,6 +111,8 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
   const [addingRent, setAddingRent] = useState(false)
   const [newRentAmount, setNewRentAmount] = useState('')
   const [newRentPaidDate, setNewRentPaidDate] = useState(new Date().toISOString().split('T')[0])
+  const [showCheckoutConfirm, setShowCheckoutConfirm] = useState(false)
+  const [checkoutDate, setCheckoutDate] = useState(new Date().toISOString().split('T')[0])
   const [newRentFrom, setNewRentFrom] = useState(person.move_in_date || '')
   const [newRentTo, setNewRentTo] = useState('')
 
@@ -151,17 +153,26 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
     }
   }
 
-  const handleCheckOut = async () => {
-    const ok = await confirm(`Mark "${person.name}" as moved out?`)
-    if (!ok) return
+  const handleCheckOut = () => {
+    setCheckoutDate(new Date().toISOString().split('T')[0])
+    setShowCheckoutConfirm(true)
+  }
+
+  const handleConfirmCheckOut = async () => {
+    setShowCheckoutConfirm(false)
     await updatePerson(person.id, {
       is_active: false, phone: '',
-      move_in_date: null, rent_type_id: null, rent_amount: null,
+      move_in_date: null, move_out_date: checkoutDate,
+      rent_type_id: null, rent_amount: null,
       room_id: null, floor_id: null, property_id: null,
     })
-    logEvent({ userId, propertyId: person.property_id, personId: person.id, eventType: 'person_checked_out', description: `"${person.name}" checked out` }).catch(() => {})
+    logEvent({ userId, propertyId: person.property_id, personId: person.id, eventType: 'person_checked_out', description: `"${person.name}" checked out on ${checkoutDate}` }).catch(() => {})
     if (onPersonChange) onPersonChange()
     onClose()
+  }
+
+  const handleCancelCheckOut = () => {
+    setShowCheckoutConfirm(false)
   }
 
   const handleDeletePermanent = async () => {
@@ -593,6 +604,21 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
           </div>
         </div>
       </div>
+      {showCheckoutConfirm && (
+        <div className="confirm-overlay" onClick={handleCancelCheckOut}>
+          <div className="confirm-modal" onClick={e => e.stopPropagation()}>
+            <p className="confirm-message">{`Mark "${person.name}" as moved out?`}</p>
+            <div className="pd-field" style={{ marginBottom: 'var(--spacing-5)' }}>
+              <label>Checkout Date</label>
+              <DatePicker value={checkoutDate} onChange={e => setCheckoutDate(e.target.value)} />
+            </div>
+            <div className="confirm-actions">
+              <button className="confirm-btn confirm-btn-no" onClick={handleCancelCheckOut}>No</button>
+              <button className="confirm-btn confirm-btn-yes" onClick={handleConfirmCheckOut}>Yes</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -7,12 +7,13 @@ import {
   fetchEvents,
   logEvent,
 } from '../../lib/rentals'
-import { Building2, Users, Clock, X, Check, Phone, ChevronDown, ChevronUp, IndianRupee, Plus, Trash2, DoorOpen, Bed, User, LogOut, RotateCcw, Undo2 } from 'lucide-react'
+import { Building2, Users, Clock, X, Check, Phone, ChevronDown, ChevronUp, IndianRupee, Plus, Trash2, DoorOpen, Bed, User, LogOut, RotateCcw, Undo2, Search } from 'lucide-react'
 import { formatDateTime } from '../../lib/dates'
 import VisualPropertyBuilder from '../../components/ui/VisualPropertyBuilder'
 import DataTable from '../../components/ui/DataTable'
 import PersonDetailModal from '../../components/ui/PersonDetailModal'
 import Loader from '../../components/ui/Loader'
+import DatePicker from '../../components/ui/DatePicker'
 
 const tabs = [
   { key: 'properties', label: 'Properties', icon: Building2 },
@@ -97,6 +98,10 @@ export default function ManagePage() {
   const [eventsCount, setEventsCount] = useState(0)
   const [eventsPage, setEventsPage] = useState(0)
   const [eventsLoading, setEventsLoading] = useState(false)
+  const [eventsSearch, setEventsSearch] = useState('')
+  const [eventsFromDate, setEventsFromDate] = useState('')
+  const [eventsToDate, setEventsToDate] = useState('')
+  const [debouncedEventsSearch, setDebouncedEventsSearch] = useState('')
   const PAGE_SIZE = 50
   const [debouncedRoomSearch, setDebouncedRoomSearch] = useState('')
   const [debouncedUnassignedSearch, setDebouncedUnassignedSearch] = useState('')
@@ -128,6 +133,11 @@ export default function ManagePage() {
     return () => clearTimeout(t)
   }, [unassignedSearch])
 
+  useEffect(() => {
+    const t = setTimeout(() => { setDebouncedEventsSearch(eventsSearch); setEventsPage(0) }, 300)
+    return () => clearTimeout(t)
+  }, [eventsSearch])
+
   const load = () => {
     Promise.all([
       fetchPersonsPaginated({ userId: user.id, hasRoom: true, page: roomPage, pageSize: PAGE_SIZE, sortBy: roomSort.by, sortDir: roomSort.dir, search: debouncedRoomSearch }),
@@ -147,18 +157,29 @@ export default function ManagePage() {
     }).catch(() => setLoading(false))
   }
 
-  useEffect(load, [user.id, roomPage, unassignedPage, roomSort.by, roomSort.dir, unassignedSort.by, unassignedSort.dir, debouncedRoomSearch, debouncedUnassignedSearch])
+  useEffect(load, [user.id, roomPage, unassignedPage, roomSort.by, roomSort.dir, unassignedSort.by, unassignedSort.dir, debouncedRoomSearch, debouncedUnassignedSearch, activeTab])
 
-  useEffect(() => {
-    if (activeTab !== 'history') return
+  const fetchEventsData = (page) => {
     setEventsLoading(true)
-    fetchEvents(user.id, { limit: 50, offset: eventsPage * 50 })
+    fetchEvents(user.id, { limit: 50, offset: page * 50, fromDate: eventsFromDate || undefined, toDate: eventsToDate || undefined, search: debouncedEventsSearch || undefined })
       .then(({ data, count }) => {
         setEvents(data)
         setEventsCount(count)
         setEventsLoading(false)
       })
       .catch(() => setEventsLoading(false))
+  }
+
+  useEffect(() => {
+    if (activeTab !== 'history') return
+    setEventsPage(0)
+    fetchEventsData(0)
+  }, [user.id, activeTab, eventsFromDate, eventsToDate, debouncedEventsSearch])
+
+  useEffect(() => {
+    if (activeTab !== 'history') return
+    if (eventsPage === 0) return
+    fetchEventsData(eventsPage)
   }, [user.id, activeTab, eventsPage])
 
   const handleRoomSort = (column) => {
@@ -395,6 +416,17 @@ export default function ManagePage() {
 
             {activeTab === 'history' && (
               <div className="ev-table-wrapper">
+                <div className="ev-filters">
+                  <div className="ev-search">
+                    <Search size={14} />
+                    <input type="text" value={eventsSearch} onChange={e => setEventsSearch(e.target.value)} placeholder="Search events..." />
+                  </div>
+                  <div className="ev-date-range">
+                    <DatePicker value={eventsFromDate} onChange={e => setEventsFromDate(e.target.value)} placeholderText="From date" />
+                    <span className="ev-date-sep">—</span>
+                    <DatePicker value={eventsToDate} onChange={e => setEventsToDate(e.target.value)} placeholderText="To date" />
+                  </div>
+                </div>
                 <DataTable
                   title="Event History"
                   count={eventsCount}

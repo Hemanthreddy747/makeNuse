@@ -558,11 +558,15 @@ export async function logEvent({ userId, propertyId, personId, eventType, descri
   return data
 }
 
-export async function fetchEvents(userId, { limit = 100, offset = 0 } = {}) {
-  const { data, error, count } = await supabase
+export async function fetchEvents(userId, { limit = 100, offset = 0, fromDate, toDate, search } = {}) {
+  let query = supabase
     .from('property_events')
     .select('*, property:property_id(name), person:person_id(name)', { count: 'exact' })
     .eq('user_id', userId)
+  if (fromDate) query = query.gte('created_at', fromDate)
+  if (toDate) query = query.lte('created_at', toDate + 'T23:59:59.999Z')
+  if (search) query = query.ilike('description', `%${search}%`)
+  const { data, error, count } = await query
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
   if (error) throw error
