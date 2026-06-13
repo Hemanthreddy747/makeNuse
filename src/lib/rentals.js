@@ -5,7 +5,7 @@ export async function fetchProperties(userId) {
     .from('properties')
     .select('*')
     .eq('user_id', userId)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: true })
   if (error) throw error
   return data
 }
@@ -204,6 +204,120 @@ export async function deleteRent(id) {
   if (error) throw error
 }
 
+/* ── Rent Obligations (Enterprise) ───── */
+
+export async function fetchRentObligations(userId) {
+  const { data, error } = await supabase
+    .from('rent_obligations')
+    .select('*, person:person_id(name), property:property_id(name), payments:rent_payments(*)')
+    .eq('user_id', userId)
+    .order('year', { ascending: false })
+    .order('month', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function fetchRentObligationsByPerson(personId) {
+  const { data, error } = await supabase
+    .from('rent_obligations')
+    .select('*, person:person_id(name), property:property_id(name), payments:rent_payments(*)')
+    .eq('person_id', personId)
+    .order('year', { ascending: false })
+    .order('month', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function createRentObligation({ userId, personId, propertyId, amount, dueDate, periodStart, periodEnd, month, year, status, notes }) {
+  const { data, error } = await supabase
+    .from('rent_obligations')
+    .insert({
+      user_id: userId,
+      person_id: personId,
+      property_id: propertyId,
+      amount,
+      due_date: dueDate,
+      period_start: periodStart || null,
+      period_end: periodEnd || null,
+      month,
+      year,
+      status: status || 'pending',
+      notes: notes || null,
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateRentObligation(id, fields) {
+  const { data, error } = await supabase
+    .from('rent_obligations')
+    .update({ ...fields, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function cancelRentObligation(id) {
+  const { data, error } = await supabase
+    .from('rent_obligations')
+    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+/* ── Rent Payments (Enterprise) ──────── */
+
+export async function createRentPayment({ obligationId, personId, propertyId, amount, paymentDate, paymentMethod, referenceNumber, notes }) {
+  const { data, error } = await supabase
+    .from('rent_payments')
+    .insert({
+      obligation_id: obligationId,
+      person_id: personId,
+      property_id: propertyId || null,
+      amount,
+      payment_date: paymentDate || new Date().toISOString(),
+      payment_method: paymentMethod || null,
+      reference_number: referenceNumber || null,
+      notes: notes || null,
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function fetchRentPaymentsByObligation(obligationId) {
+  const { data, error } = await supabase
+    .from('rent_payments')
+    .select('*')
+    .eq('obligation_id', obligationId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function fetchRentPaymentsByPerson(personId) {
+  const { data, error } = await supabase
+    .from('rent_payments')
+    .select('*, obligation:obligation_id(*)')
+    .eq('person_id', personId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function deleteRentPayment(id) {
+  const { error } = await supabase.from('rent_payments').delete().eq('id', id)
+  if (error) throw error
+}
+
 /* ── Floors ──────────────────────────── */
 
 export async function fetchFloors(userId, propertyId) {
@@ -297,7 +411,7 @@ export async function fetchAllRooms(userId) {
     .from('rooms')
     .select('*')
     .eq('user_id', userId)
-    .order('name', { ascending: true })
+    .order('created_at', { ascending: true })
   if (error) throw error
   return data
 }

@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Receipt, Building2 } from 'lucide-react'
 import VisualPropertyBuilder from '../../components/ui/VisualPropertyBuilder'
 import RentTypesManager from '../../components/ui/RentTypesManager'
+import { fetchRentTypes, seedDefaultRentTypes } from '../../lib/rentals'
 
 const tabs = [
   { key: 'builder', label: 'Property', icon: Building2 },
@@ -15,6 +16,13 @@ export default function CreatePage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const tabParam = searchParams.get('tab')
   const [activeTab, setActiveTab] = useState('builder')
+
+  useEffect(() => {
+    if (!user) return
+    fetchRentTypes(user.id).then(data => {
+      if (data.length === 0) seedDefaultRentTypes(user.id)
+    })
+  }, [user])
 
   useEffect(() => {
     const validTabs = tabs.map(t => t.key)
@@ -31,7 +39,7 @@ export default function CreatePage() {
     <div className="page-create">
       <div className="page-header">
         <h1>Create</h1>
-        <p className="page-subtitle">Build your property and add occupants with rent</p>
+        {/* <p className="page-subtitle">Build your property and add occupants with rent</p> */}
       </div>
 
       <div className="tab-bar">
@@ -47,7 +55,7 @@ export default function CreatePage() {
         ))}
       </div>
 
-      <div className="tab-content">
+      <div className="tab-content" key={activeTab}>
         {activeTab === 'builder' && <VisualPropertyBuilder />}
         {activeTab === 'rent' && (
           <div className="rent-types-panel">

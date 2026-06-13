@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Plus, Trash2, Pencil, X, Check } from 'lucide-react'
 import { useConfirm } from '../../context/ConfirmContext'
 import {
-  fetchRentTypes, createRentType, updateRentType, deleteRentType, seedDefaultRentTypes,
+  fetchRentTypes, createRentType, updateRentType, deleteRentType,
 } from '../../lib/rentals'
 
 const BASE_TYPES = [
@@ -31,11 +31,7 @@ export default function RentTypesManager({ userId, onTypesChange }) {
   const load = () => {
     if (loadingRef.current) return
     loadingRef.current = true
-    fetchRentTypes(userId).then(async data => {
-      if (data.length === 0) {
-        await seedDefaultRentTypes(userId)
-        data = await fetchRentTypes(userId)
-      }
+    fetchRentTypes(userId).then(data => {
       setTypes(data)
       setLoading(false)
       if (onTypesChange) onTypesChange(data)

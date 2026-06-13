@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthProvider'
 import {
   fetchPersonsPaginated, fetchPersons, deletePerson, updatePerson,
-  fetchRents, deleteRent, updateRent, fetchAllRooms,
+  fetchRentObligations, cancelRentObligation, updateRentObligation, createRentPayment,
+  fetchAllRooms,
 } from '../../lib/rentals'
 import { Building2, Users, Receipt, Clock, Trash2, X, Check, Phone, Mail, Filter, ChevronDown, ChevronUp, IndianRupee, Home } from 'lucide-react'
 import { useConfirm } from '../../context/ConfirmContext'
-import { formatDate } from '../../lib/dates'
+import { formatDateTime } from '../../lib/dates'
 import VisualPropertyBuilder from '../../components/ui/VisualPropertyBuilder'
 import DataTable from '../../components/ui/DataTable'
 import PersonDetailModal from '../../components/ui/PersonDetailModal'
@@ -25,9 +26,6 @@ const RENT_FILTERS = [
   { key: 'paid', label: 'Paid' },
   { key: 'overdue', label: 'Overdue' },
 ]
-
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December']
 
 function EditableCell({ value, onSave }) {
   const [editing, setEditing] = useState(false)
@@ -52,47 +50,7 @@ function EditableCell({ value, onSave }) {
   )
 }
 
-function RentRow({ rent, onDelete, onUpdate }) {
-  const confirm = useConfirm()
-  const statusClass = `rent-status rent-status-${rent.status}`
 
-  const toggleStatus = () => {
-    const next = rent.status === 'paid' ? 'pending' : 'paid'
-    onUpdate(rent.id, { status: next, paid_date: next === 'paid' ? new Date().toISOString().split('T')[0] : null })
-  }
-
-  const monthLabel = MONTHS[(rent.month || 1) - 1]
-  const dateStr = rent.due_date ? formatDate(rent.due_date) : ''
-
-  return (
-    <div className="list-row">
-      <div className="list-row-info">
-        <strong>{rent.person?.name || 'Unknown'}</strong>
-        <span className="text-muted">
-          {rent.property?.name ? `${rent.property.name} · ` : ''}
-          {monthLabel} {rent.year || ''}
-          {dateStr ? ` · Due ${dateStr}` : ''}
-        </span>
-        <span className="rent-amount">{'\u20B9'}{rent.amount}</span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span className={statusClass}>{rent.status}</span>
-        <div className="list-row-actions">
-          {rent.status === 'overdue' && (
-            <button className="icon-btn success" onClick={() => onUpdate(rent.id, { status: 'pending' })} title="Mark pending"><X size={14} /></button>
-          )}
-          {rent.status !== 'paid' && (
-            <button className="icon-btn success" onClick={toggleStatus} title="Mark paid"><Check size={16} /></button>
-          )}
-          {rent.status === 'paid' && (
-            <button className="icon-btn" onClick={toggleStatus} title="Revert to pending"><X size={14} /></button>
-          )}
-          <button className="icon-btn danger" onClick={async () => { const ok = await confirm('Delete this rent record?'); if (ok) onDelete(rent.id) }}><Trash2 size={16} /></button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function StatCard({ icon: Icon, label, value, accent }) {
   return (
@@ -111,7 +69,7 @@ function StatsGrid({ persons, rents }) {
   const filledBeds = roomPersons.filter(p => p.name?.trim()).length
   const emptyBeds = roomPersons.filter(p => !p.name?.trim()).length
   const collected = rents.filter(r => r.status === 'paid').reduce((s, r) => s + Number(r.amount), 0)
-  const due = rents.filter(r => r.status !== 'paid').reduce((s, r) => s + Number(r.amount), 0)
+  const due = rents.filter(r => r.status !== 'paid' && r.status !== 'cancelled').reduce((s, r) => s + Number(r.amount), 0)
 
   return (
     <div className="stats-grid">
@@ -180,7 +138,7 @@ export default function ManagePage() {
     Promise.all([
       fetchPersonsPaginated({ userId: user.id, hasRoom: true, page: roomPage, pageSize: PAGE_SIZE, sortBy: roomSort.by, sortDir: roomSort.dir, search: debouncedRoomSearch }),
       fetchPersonsPaginated({ userId: user.id, hasRoom: false, page: unassignedPage, pageSize: PAGE_SIZE, sortBy: unassignedSort.by, sortDir: unassignedSort.dir, search: debouncedUnassignedSearch }),
-      fetchRents(user.id),
+      fetchRentObligations(user.id),
       fetchAllRooms(user.id),
       fetchPersons(user.id),
     ]).then(([roomRes, unassignedRes, r, allRooms, allActivePersons]) => {
@@ -219,25 +177,37 @@ export default function ManagePage() {
     await deletePerson(id); load()
   }
   const handleDeleteRent = async (id) => {
-    await deleteRent(id); load()
+    await cancelRentObligation(id); load()
   }
 
   const handleUpdatePerson = async (id, fields) => {
     await updatePerson(id, fields); load()
   }
   const handleUpdateRent = async (id, fields) => {
-    await updateRent(id, fields); load()
+    if (fields.status === 'paid') {
+      const obligation = rents.find(r => r.id === id)
+      if (obligation) {
+        await createRentPayment({
+          obligationId: id,
+          personId: obligation.person_id,
+          propertyId: obligation.property_id,
+          amount: obligation.amount,
+          paymentDate: fields.paid_date || new Date().toISOString(),
+        })
+      }
+    }
+    await updateRentObligation(id, fields); load()
   }
 
   const filteredRents = rentFilter === 'all'
-    ? rents
+    ? rents.filter(r => r.status !== 'cancelled')
     : rents.filter(r => r.status === rentFilter)
 
   return (
     <div className="page-manage">
       <div className="page-header">
         <h1>Manage</h1>
-        <p className="page-subtitle">View and manage your properties, floors, rooms, and tenants</p>
+        {/* <p className="page-subtitle">View and manage your properties, floors, rooms, and tenants</p> */}
       </div>
 
       {!loading && (() => {
@@ -259,7 +229,7 @@ export default function ManagePage() {
         ))}
       </div>
 
-      <div className="tab-content">
+      <div className="tab-content" key={activeTab}>
         {loading ? (
           <Loader />
         ) : (
@@ -411,15 +381,69 @@ export default function ManagePage() {
                   ))}
                 </div>
 
-                {filteredRents.length === 0 ? (
-                  <p className="text-muted" style={{ marginTop: '1rem' }}>No {rentFilter !== 'all' ? rentFilter : ''} rents found. Add one from Create page.</p>
-                ) : (
-                  <div className="list-container" style={{ marginTop: '1rem' }}>
-                    {filteredRents.map(r => (
-                      <RentRow key={r.id} rent={r} onDelete={handleDeleteRent} onUpdate={handleUpdateRent} />
-                    ))}
-                  </div>
-                )}
+                <DataTable
+                  columns={[
+                    {
+                      key: 'person',
+                      label: 'Person',
+                      render: r => (
+                        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.3 }}>
+                          <strong>{r.person?.name || 'Unknown'}</strong>
+                          <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{r.person?.room_no ? `Room ${r.person.room_no}` : ''}</span>
+                        </div>
+                      ),
+                    },
+                    {
+                      key: 'property',
+                      label: 'Property',
+                      render: r => r.property?.name || <span className="text-muted">—</span>,
+                    },
+                    {
+                      key: 'amount',
+                      label: 'Amount',
+                      render: r => <span>{'\u20B9'}{r.amount}</span>,
+                    },
+                    {
+                      key: 'paid_date',
+                      label: 'Paid On',
+                      render: r => {
+                        const latest = (r.payments || []).slice(-1)[0]
+                        return latest?.payment_date
+                          ? formatDateTime(latest.payment_date)
+                          : <span className="text-muted">—</span>
+                      },
+                    },
+                    {
+                      key: 'created_at',
+                      label: 'Created',
+                      render: r => r.created_at ? formatDateTime(r.created_at) : <span className="text-muted">—</span>,
+                    },
+                    {
+                      key: 'status',
+                      label: 'Status',
+                      render: r => {
+                        const cls = `rent-status rent-status-${r.status}`
+                        return <span className={cls}>{r.status}</span>
+                      },
+                    },
+                  ]}
+                  data={filteredRents}
+                  loading={loading}
+                  emptyMessage={`No ${rentFilter !== 'all' ? rentFilter : ''} rents found. Add one from Create page.`}
+                  rowActions={r => (
+                    <>
+                      {r.status !== 'paid' && r.status !== 'cancelled' && (
+                        <button className="icon-btn success" onClick={e => { e.stopPropagation(); handleUpdateRent(r.id, { status: 'paid', paid_date: new Date().toISOString() }) }} title="Mark paid"><Check size={14} /></button>
+                      )}
+                      {r.status === 'paid' && (
+                        <button className="icon-btn" onClick={e => { e.stopPropagation(); handleUpdateRent(r.id, { status: 'pending' }) }} title="Revert"><X size={14} /></button>
+                      )}
+                      {r.status !== 'cancelled' && (
+                        <button className="icon-btn danger" onClick={async e => { e.stopPropagation(); const ok = await confirm('Cancel this rent obligation?'); if (ok) handleDeleteRent(r.id) }}><Trash2 size={14} /></button>
+                      )}
+                    </>
+                  )}
+                />
               </>
             )}
 

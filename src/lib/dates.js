@@ -24,6 +24,7 @@ export function formatDateTime(date) {
   if (isNaN(d.getTime())) return '—'
 
   const datePart = `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`
+  if (typeof date === 'string' && !date.includes('T')) return datePart
   const timePart = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
   return `${datePart}, ${timePart}`
 }

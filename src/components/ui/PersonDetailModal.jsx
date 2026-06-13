@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
-import { X, Trash2, Plus, Check, Phone, Calendar, IndianRupee, LogOut, Undo2, Paperclip, Camera, Download, User } from 'lucide-react'
+import { X, Trash2, Plus, Check, Phone, Calendar, IndianRupee, LogOut, Undo2, RotateCcw, Paperclip, Camera, Download, User } from 'lucide-react'
 import { useConfirm } from '../../context/ConfirmContext'
 import {
   updatePerson, deletePerson, permanentlyDeletePerson,
-  fetchRentsByPerson, createRent, updateRent, deleteRent,
+  fetchRentObligationsByPerson, createRentObligation, updateRentObligation, cancelRentObligation,
+  createRentPayment,
   fetchRentTypes,
   fetchPersonDocuments, uploadPersonDocument, deletePersonDocument, getPersonDocumentUrl,
 } from '../../lib/rentals'
-import { formatDate } from '../../lib/dates'
+import { formatDateTime } from '../../lib/dates'
 import DatePicker from './DatePicker'
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024
@@ -69,13 +70,14 @@ const STATUS_STYLES = {
   paid: { dot: '#16a34a', bg: '#f0fdf4', label: 'Paid' },
   pending: { dot: '#d97706', bg: '#fffbeb', label: 'Pending' },
   overdue: { dot: '#dc2626', bg: '#fef2f2', label: 'Overdue' },
+  cancelled: { dot: '#6b7280', bg: '#f3f4f6', label: 'Cancelled' },
 }
 
 function getMonthsInRange(from, to) {
   const months = []
   const d = new Date(from.getFullYear(), from.getMonth(), 1)
   const end = new Date(to.getFullYear(), to.getMonth(), 1)
-  while (d <= end) {
+  while (d < end) {
     months.push({ month: d.getMonth() + 1, year: d.getFullYear() })
     d.setMonth(d.getMonth() + 1)
   }
@@ -112,7 +114,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
   const [newRentTo, setNewRentTo] = useState('')
 
   useEffect(() => {
-    fetchRentsByPerson(person.id).then(setRents).catch(() => {})
+    fetchRentObligationsByPerson(person.id).then(setRents).catch(() => {})
   }, [person.id])
 
   useEffect(() => {
@@ -187,9 +189,9 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
 
   const openAddRent = () => {
     const baseType = selectedType?.type || 'monthly'
-    const from = person.move_in_date || ''
+    const from = moveInDate || ''
     setNewRentAmount(rentAmount ? String(rentAmount) : '')
-    setNewRentPaidDate(new Date().toISOString().split('T')[0])
+    setNewRentPaidDate(new Date().toISOString())
     setNewRentFrom(from)
     setNewRentTo(computeToDate(baseType, from))
     setAddingRent(true)
@@ -205,17 +207,36 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
       const months = getMonthsInRange(fromDate, toDate)
       const results = []
       for (const { month, year } of months) {
-        const data = await createRent({
+        const lastDay = new Date(year, month, 0)
+        const dueDate = lastDay.toISOString().split('T')[0]
+        const amount = parseFloat(newRentAmount)
+        const now = new Date()
+        const paidDate = newRentPaidDate
+          ? new Date(newRentPaidDate.split('T')[0] + 'T' + now.toTimeString().split(' ')[0]).toISOString()
+          : now.toISOString()
+
+        const obligation = await createRentObligation({
           userId,
           personId: person.id,
           propertyId: person.property_id,
-          amount: parseFloat(newRentAmount),
-          status: 'paid',
-          paidDate: newRentPaidDate || new Date().toISOString().split('T')[0],
+          amount,
+          dueDate,
+          periodStart: newRentFrom || null,
+          periodEnd: newRentTo || null,
           month,
           year,
+          status: 'paid',
         })
-        results.push(data)
+
+        await createRentPayment({
+          obligationId: obligation.id,
+          personId: person.id,
+          propertyId: person.property_id,
+          amount,
+          paymentDate: paidDate,
+        })
+
+        results.push({ ...obligation, payments: [{ amount, payment_date: paidDate }] })
       }
       setRents(prev => [...results, ...prev])
       setAddingRent(false)
@@ -226,17 +247,34 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
     }
   }
 
-  const handleUpdateRentStatus = async (rentId, currentStatus) => {
-    const next = currentStatus === 'paid' ? 'pending' : 'paid'
-    await updateRent(rentId, { status: next, paid_date: next === 'paid' ? new Date().toISOString().split('T')[0] : null })
-    setRents(prev => prev.map(r => r.id === rentId ? { ...r, status: next, paid_date: next === 'paid' ? new Date().toISOString().split('T')[0] : null } : r))
+  const handleUpdateRentStatus = async (obligationId, currentStatus) => {
+    const next = currentStatus === 'paid' ? 'pending' : currentStatus === 'cancelled' ? 'pending' : 'paid'
+    const today = new Date().toISOString()
+    if (next === 'paid') {
+      await createRentPayment({
+        obligationId,
+        personId: person.id,
+        propertyId: person.property_id,
+        amount: rents.find(r => r.id === obligationId)?.amount || 0,
+        paymentDate: today,
+      })
+    }
+    await updateRentObligation(obligationId, { status: next })
+    setRents(prev => prev.map(r => {
+      if (r.id !== obligationId) return r
+      if (currentStatus === 'cancelled') return { ...r, status: next }
+      const payments = next === 'paid'
+        ? [...(r.payments || []), { amount: r.amount, payment_date: today }]
+        : (r.payments || []).slice(0, -1)
+      return { ...r, status: next, payments }
+    }))
   }
 
-  const handleDeleteRent = async (rentId) => {
+  const handleDeleteRent = async (obligationId) => {
     const ok = await confirm('Delete this rent record?')
     if (!ok) return
-    await deleteRent(rentId)
-    setRents(prev => prev.filter(r => r.id !== rentId))
+    await cancelRentObligation(obligationId)
+    setRents(prev => prev.map(r => r.id === obligationId ? { ...r, status: 'cancelled' } : r))
   }
 
   const handleUpload = async (e) => {
@@ -317,7 +355,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                 </div>
                 <div className="pd-field">
                   <label>Move-in Date</label>
-                  <DatePicker value={moveInDate} onChange={e => { const d = e.target.value; setMoveInDate(d); handleSavePerson({ move_in_date: d || null }) }} />
+                  <DatePicker value={moveInDate} onChange={e => { const d = e.target.value; setMoveInDate(d); setAddingRent(false); handleSavePerson({ move_in_date: d || null }) }} />
                 </div>
               </div>
               <div className="pd-docs-inline">
@@ -378,7 +416,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
           <section className="pd-card">
             <div className="pd-card-header">
               <span className="pd-card-icon"><IndianRupee size={14} /></span>
-              <h3>Rent System</h3>
+              <h3>Rent Type</h3>
             </div>
             <div className="pd-card-body">
               <div className="pd-row">
@@ -407,7 +445,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                 <Plus size={13} /> Add
               </button>
             </div>
-            <div className="pd-card-body">
+            <div className="pd-card-body pd-card-body--scroll">
               {addingRent && (
                 <form className="pd-mini-form pd-mini-form--col" onSubmit={handleAddRent}>
                   <div className="pd-row">
@@ -430,11 +468,6 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                       <DatePicker value={newRentTo} onChange={e => setNewRentTo(e.target.value)} />
                     </div>
                   </div>
-                  {newRentFrom && newRentTo && (
-                    <p className="pd-range-hint">
-                      Covers {getMonthsInRange(new Date(newRentFrom), new Date(newRentTo)).length} month(s)
-                    </p>
-                  )}
                   <div className="pd-mini-actions">
                     <button type="submit" className="pd-btn pd-btn-primary" disabled={saving || !newRentAmount}>
                       {saving ? 'Saving...' : 'Record Payment'}
@@ -448,29 +481,39 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                 <p className="pd-empty">No rent records yet.</p>
               ) : (
                 <div className="pd-rent-list">
-                  {rents.map(rent => {
-                    const s = STATUS_STYLES[rent.status] || STATUS_STYLES.pending
-                    const monthLabel = MONTHS[(rent.month || 1) - 1]
+                  {rents.map(obligation => {
+                    const s = STATUS_STYLES[obligation.status] || STATUS_STYLES.pending
+                    const monthLabel = MONTHS[(obligation.month || 1) - 1]
+                    const latestPayment = (obligation.payments || []).slice(-1)[0]
+                    const paidDate = latestPayment?.payment_date
                     return (
-                      <div key={rent.id} className="pd-rent-item">
+                      <div key={obligation.id} className="pd-rent-item">
                         <div className="pd-rent-main">
-                          <span className="pd-rent-amount">{'\u20B9'}{rent.amount}</span>
+                          <span className="pd-rent-amount">{'\u20B9'}{obligation.amount}</span>
                           <span className="pd-rent-status" style={{ background: s.bg, color: s.dot }}>
                             <span className="pd-status-dot" style={{ background: s.dot }} />
                             {s.label}
                           </span>
                         </div>
                         <div className="pd-rent-sub">
-                          {monthLabel} {rent.year}
-                          {rent.paid_date ? ` · Paid ${formatDate(rent.paid_date)}` : ''}
+                          {paidDate ? formatDateTime(paidDate) : ''}
+                          <span className="pd-rent-timestamps">
+                            Created {formatDateTime(obligation.created_at)}
+                            {obligation.updated_at && obligation.updated_at !== obligation.created_at ? ` · Updated ${formatDateTime(obligation.updated_at)}` : ''}
+                          </span>
                         </div>
                         <div className="pd-rent-actions">
-                          {rent.status !== 'paid' ? (
-                            <button className="pd-action-icon paid" onClick={() => handleUpdateRentStatus(rent.id, rent.status)} title="Mark paid"><Check size={13} /></button>
+                          {obligation.status !== 'paid' && obligation.status !== 'cancelled' ? (
+                            <button className="pd-action-icon paid" onClick={() => handleUpdateRentStatus(obligation.id, obligation.status)} title="Mark paid"><Check size={13} /></button>
+                          ) : null}
+                          {obligation.status === 'paid' ? (
+                            <button className="pd-action-icon" onClick={() => handleUpdateRentStatus(obligation.id, obligation.status)} title="Revert"><Undo2 size={13} /></button>
+                          ) : null}
+                          {obligation.status !== 'cancelled' ? (
+                            <button className="pd-action-icon danger" onClick={() => handleDeleteRent(obligation.id)} title="Cancel"><Trash2 size={13} /></button>
                           ) : (
-                            <button className="pd-action-icon" onClick={() => handleUpdateRentStatus(rent.id, rent.status)} title="Revert"><Undo2 size={13} /></button>
+                            <button className="pd-action-icon" onClick={() => handleUpdateRentStatus(obligation.id, 'cancelled')} title="Restore"><RotateCcw size={13} /></button>
                           )}
-                          <button className="pd-action-icon danger" onClick={() => handleDeleteRent(rent.id)} title="Delete"><Trash2 size={13} /></button>
                         </div>
                       </div>
                     )
