@@ -58,25 +58,29 @@ export async function fetchPersonsWithRooms(userId) {
   return data
 }
 
-export async function fetchPersonsPaginated({ userId, hasRoom, page = 0, pageSize = 50, sortBy = 'move_in_date', sortDir = 'desc', search = '' }) {
-  const baseQuery = supabase
+export async function fetchPersonsPaginated({ userId, hasRoom, page = 0, pageSize = 50, sortBy = 'move_in_date', sortDir = 'desc', search = '', includeInactive = false }) {
+  let query = supabase
     .from('persons')
     .select('*, property:property_id(name), floor:floor_id(name), room:room_id(name), rent_type:rent_type_id(*)', { count: 'exact' })
     .eq('user_id', userId)
-    .eq('is_active', true)
-    .neq('name', '')
 
-  if (hasRoom === true) {
-    baseQuery.not('room_id', 'is', null)
-  } else if (hasRoom === false) {
-    baseQuery.is('room_id', null)
+  if (includeInactive) {
+    query = query.or(`is_active.eq.false,and(is_active.eq.true,room_id.is.null,name.neq.)`)
+  } else {
+    query = query.eq('is_active', true).neq('name', '')
+  }
+
+  if (hasRoom === true && !includeInactive) {
+    query = query.not('room_id', 'is', null)
+  } else if (hasRoom === false && !includeInactive) {
+    query = query.is('room_id', null)
   }
 
   if (search) {
-    baseQuery.ilike('name', `%${search}%`)
+    query = query.ilike('name', `%${search}%`)
   }
 
-  const { data, error, count } = await baseQuery
+  const { data, error, count } = await query
     .order(sortBy, { ascending: sortDir === 'asc', nullsLast: true })
     .range(page * pageSize, (page + 1) * pageSize - 1)
 

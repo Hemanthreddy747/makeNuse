@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthProvider'
 import {
   fetchPersonsPaginated, fetchPersons, deletePerson, updatePerson,
-  fetchRentObligations, cancelRentObligation, updateRentObligation, createRentPayment,
+  fetchRentObligations,
   fetchAllRooms,
 } from '../../lib/rentals'
-import { Building2, Users, Receipt, Clock, Trash2, X, Check, Phone, Mail, Filter, ChevronDown, ChevronUp, IndianRupee, Home } from 'lucide-react'
-import { useConfirm } from '../../context/ConfirmContext'
+import { Building2, Users, Clock, X, Check, Phone, ChevronDown, ChevronUp, IndianRupee } from 'lucide-react'
 import { formatDateTime } from '../../lib/dates'
 import VisualPropertyBuilder from '../../components/ui/VisualPropertyBuilder'
 import DataTable from '../../components/ui/DataTable'
@@ -16,15 +15,7 @@ import Loader from '../../components/ui/Loader'
 const tabs = [
   { key: 'properties', label: 'Properties', icon: Building2 },
   { key: 'persons', label: 'People', icon: Users },
-  { key: 'rents', label: 'Rents', icon: Receipt },
   { key: 'history', label: 'History', icon: Clock },
-]
-
-const RENT_FILTERS = [
-  { key: 'all', label: 'All' },
-  { key: 'pending', label: 'Pending' },
-  { key: 'paid', label: 'Paid' },
-  { key: 'overdue', label: 'Overdue' },
 ]
 
 function EditableCell({ value, onSave }) {
@@ -87,22 +78,20 @@ export default function ManagePage() {
   const [roomPersons, setRoomPersons] = useState([])
   const [roomPersonsCount, setRoomPersonsCount] = useState(0)
   const [roomPage, setRoomPage] = useState(0)
-  const [roomSort, setRoomSort] = useState({ by: 'move_in_date', dir: 'desc' })
+  const [roomSort, setRoomSort] = useState({ by: 'created_at', dir: 'desc' })
   const [roomSearch, setRoomSearch] = useState('')
   const [unassignedPersons, setUnassignedPersons] = useState([])
   const [unassignedPersonsCount, setUnassignedPersonsCount] = useState(0)
   const [unassignedPage, setUnassignedPage] = useState(0)
-  const [unassignedSort, setUnassignedSort] = useState({ by: 'move_in_date', dir: 'desc' })
+  const [unassignedSort, setUnassignedSort] = useState({ by: 'created_at', dir: 'desc' })
   const [unassignedSearch, setUnassignedSearch] = useState('')
   const [rents, setRents] = useState([])
-  const [rentFilter, setRentFilter] = useState('all')
   const [rooms, setRooms] = useState([])
   const [allPersons, setAllPersons] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedPerson, setSelectedPerson] = useState(null)
   const [showUnassigned, setShowUnassigned] = useState(false)
   const PAGE_SIZE = 50
-  const confirm = useConfirm()
   const [debouncedRoomSearch, setDebouncedRoomSearch] = useState('')
   const [debouncedUnassignedSearch, setDebouncedUnassignedSearch] = useState('')
   const [collapsed, setCollapsed] = useState(() => {
@@ -134,10 +123,9 @@ export default function ManagePage() {
   }, [unassignedSearch])
 
   const load = () => {
-    setLoading(true)
     Promise.all([
       fetchPersonsPaginated({ userId: user.id, hasRoom: true, page: roomPage, pageSize: PAGE_SIZE, sortBy: roomSort.by, sortDir: roomSort.dir, search: debouncedRoomSearch }),
-      fetchPersonsPaginated({ userId: user.id, hasRoom: false, page: unassignedPage, pageSize: PAGE_SIZE, sortBy: unassignedSort.by, sortDir: unassignedSort.dir, search: debouncedUnassignedSearch }),
+      fetchPersonsPaginated({ userId: user.id, hasRoom: false, page: unassignedPage, pageSize: PAGE_SIZE, sortBy: unassignedSort.by, sortDir: unassignedSort.dir, search: debouncedUnassignedSearch, includeInactive: true }),
       fetchRentObligations(user.id),
       fetchAllRooms(user.id),
       fetchPersons(user.id),
@@ -176,32 +164,10 @@ export default function ManagePage() {
   const handleDeletePerson = async (id) => {
     await deletePerson(id); load()
   }
-  const handleDeleteRent = async (id) => {
-    await cancelRentObligation(id); load()
-  }
 
   const handleUpdatePerson = async (id, fields) => {
     await updatePerson(id, fields); load()
   }
-  const handleUpdateRent = async (id, fields) => {
-    if (fields.status === 'paid') {
-      const obligation = rents.find(r => r.id === id)
-      if (obligation) {
-        await createRentPayment({
-          obligationId: id,
-          personId: obligation.person_id,
-          propertyId: obligation.property_id,
-          amount: obligation.amount,
-          paymentDate: fields.paid_date || new Date().toISOString(),
-        })
-      }
-    }
-    await updateRentObligation(id, fields); load()
-  }
-
-  const filteredRents = rentFilter === 'all'
-    ? rents.filter(r => r.status !== 'cancelled')
-    : rents.filter(r => r.status === rentFilter)
 
   return (
     <div className="page-manage">
@@ -234,7 +200,7 @@ export default function ManagePage() {
           <Loader />
         ) : (
           <>
-            {activeTab === 'properties' && <VisualPropertyBuilder readOnly collapsed={collapsed} onToggleCollapse={toggleCollapse} />}
+            {activeTab === 'properties' && <VisualPropertyBuilder readOnly collapsed={collapsed} onToggleCollapse={toggleCollapse} onPersonChange={load} />}
 
             {activeTab === 'persons' && (
               <>
@@ -281,18 +247,30 @@ export default function ManagePage() {
                           : <span className="text-muted">—</span>,
                       },
                       {
-                        key: 'status',
-                        label: 'Status',
+                        key: 'created_at',
+                        label: 'Added Date',
+                        sortKey: 'created_at',
+                        render: p => p.created_at
+                          ? <span className="text-muted" style={{ fontSize: 13 }}>{formatDateTime(p.created_at)}</span>
+                          : <span className="text-muted">—</span>,
+                      },
+                      {
+                        key: 'last_payment',
+                        label: 'Last Payment',
                         render: p => {
                           const personRents = rents.filter(r => r.person_id === p.id)
-                          if (personRents.length === 0) return <span className="text-muted">—</span>
-                          const hasOverdue = personRents.some(r => r.status === 'overdue')
-                          const hasPending = personRents.some(r => r.status === 'pending')
-                          const allPaid = personRents.every(r => r.status === 'paid')
-                          if (hasOverdue) return <span className="rent-status rent-status-overdue">Overdue</span>
-                          if (hasPending) return <span className="rent-status rent-status-pending">Pending</span>
-                          if (allPaid) return <span className="rent-status rent-status-paid">Paid</span>
-                          return <span className="rent-status rent-status-pending">Mixed</span>
+                          const payments = personRents.flatMap(r => r.payments || []).sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date))
+                          const last = payments[0]
+                          if (!last) return <span className="text-muted">—</span>
+                          return (
+                            <span style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <IndianRupee size={11} />
+                              {last.amount}
+                              <span className="text-muted" style={{ marginLeft: 4 }}>
+                                {formatDateTime(last.payment_date)}
+                              </span>
+                            </span>
+                          )
                         },
                       },
                     ]}
@@ -347,6 +325,33 @@ export default function ManagePage() {
                               ? <span className="contact-chip"><Phone size={12} /> {p.phone}</span>
                               : <span className="text-muted">—</span>,
                           },
+                          {
+                            key: 'created_at',
+                            label: 'Added Date',
+                            sortKey: 'created_at',
+                            render: p => p.created_at
+                              ? <span className="text-muted" style={{ fontSize: 13 }}>{formatDateTime(p.created_at)}</span>
+                              : <span className="text-muted">—</span>,
+                          },
+                          {
+                            key: 'last_payment',
+                            label: 'Last Payment',
+                            render: p => {
+                              const personRents = rents.filter(r => r.person_id === p.id)
+                              const payments = personRents.flatMap(r => r.payments || []).sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date))
+                              const last = payments[0]
+                              if (!last) return <span className="text-muted">—</span>
+                              return (
+                                <span style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                  <IndianRupee size={11} />
+                                  {last.amount}
+                                  <span className="text-muted" style={{ marginLeft: 4 }}>
+                                    {formatDateTime(last.payment_date)}
+                                  </span>
+                                </span>
+                              )
+                            },
+                          },
                         ]}
                         data={unassignedPersons}
                         loading={loading}
@@ -363,87 +368,6 @@ export default function ManagePage() {
                     </>
                   )}
                 </div>
-              </>
-            )}
-
-            {activeTab === 'rents' && (
-              <>
-                <div className="filter-bar">
-                  {RENT_FILTERS.map(f => (
-                    <button
-                      key={f.key}
-                      className={`filter-btn${rentFilter === f.key ? ' active' : ''}`}
-                      onClick={() => setRentFilter(f.key)}
-                    >
-                      <Filter size={14} />
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-
-                <DataTable
-                  columns={[
-                    {
-                      key: 'person',
-                      label: 'Person',
-                      render: r => (
-                        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.3 }}>
-                          <strong>{r.person?.name || 'Unknown'}</strong>
-                          <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{r.person?.room_no ? `Room ${r.person.room_no}` : ''}</span>
-                        </div>
-                      ),
-                    },
-                    {
-                      key: 'property',
-                      label: 'Property',
-                      render: r => r.property?.name || <span className="text-muted">—</span>,
-                    },
-                    {
-                      key: 'amount',
-                      label: 'Amount',
-                      render: r => <span>{'\u20B9'}{r.amount}</span>,
-                    },
-                    {
-                      key: 'paid_date',
-                      label: 'Paid On',
-                      render: r => {
-                        const latest = (r.payments || []).slice(-1)[0]
-                        return latest?.payment_date
-                          ? formatDateTime(latest.payment_date)
-                          : <span className="text-muted">—</span>
-                      },
-                    },
-                    {
-                      key: 'created_at',
-                      label: 'Created',
-                      render: r => r.created_at ? formatDateTime(r.created_at) : <span className="text-muted">—</span>,
-                    },
-                    {
-                      key: 'status',
-                      label: 'Status',
-                      render: r => {
-                        const cls = `rent-status rent-status-${r.status}`
-                        return <span className={cls}>{r.status}</span>
-                      },
-                    },
-                  ]}
-                  data={filteredRents}
-                  loading={loading}
-                  emptyMessage={`No ${rentFilter !== 'all' ? rentFilter : ''} rents found. Add one from Create page.`}
-                  rowActions={r => (
-                    <>
-                      {r.status !== 'paid' && r.status !== 'cancelled' && (
-                        <button className="icon-btn success" onClick={e => { e.stopPropagation(); handleUpdateRent(r.id, { status: 'paid', paid_date: new Date().toISOString() }) }} title="Mark paid"><Check size={14} /></button>
-                      )}
-                      {r.status === 'paid' && (
-                        <button className="icon-btn" onClick={e => { e.stopPropagation(); handleUpdateRent(r.id, { status: 'pending' }) }} title="Revert"><X size={14} /></button>
-                      )}
-                      {r.status !== 'cancelled' && (
-                        <button className="icon-btn danger" onClick={async e => { e.stopPropagation(); const ok = await confirm('Cancel this rent obligation?'); if (ok) handleDeleteRent(r.id) }}><Trash2 size={14} /></button>
-                      )}
-                    </>
-                  )}
-                />
               </>
             )}
 

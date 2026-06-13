@@ -148,7 +148,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
     const ok = await confirm(`Mark "${person.name}" as moved out?`)
     if (!ok) return
     await updatePerson(person.id, {
-      name: '', phone: '',
+      is_active: false, phone: '',
       move_in_date: null, rent_type_id: null, rent_amount: null,
     })
     if (onPersonChange) onPersonChange()
@@ -158,10 +158,9 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
   const handleDeletePermanent = async () => {
     if (person.name) {
       const ok = await confirm(
-        `Remove "${person.name}" from this room? The bed will show as empty.`
+        `Move "${person.name}" to past? The bed will show as empty.`
       )
       if (!ok) return
-      await updatePerson(person.id, { name: '' })
       await deletePerson(person.id)
     } else {
       const ok = await confirm('Remove this empty bed?')
@@ -204,17 +203,47 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
     try {
       const fromDate = newRentFrom ? new Date(newRentFrom) : new Date()
       const toDate = newRentTo ? new Date(newRentTo) : new Date()
-      const months = getMonthsInRange(fromDate, toDate)
-      const results = []
-      for (const { month, year } of months) {
-        const lastDay = new Date(year, month, 0)
-        const dueDate = lastDay.toISOString().split('T')[0]
-        const amount = parseFloat(newRentAmount)
-        const now = new Date()
-        const paidDate = newRentPaidDate
-          ? new Date(newRentPaidDate.split('T')[0] + 'T' + now.toTimeString().split(' ')[0]).toISOString()
-          : now.toISOString()
+      const baseType = selectedType?.type || 'monthly'
+      const amount = parseFloat(newRentAmount)
+      const now = new Date()
+      const paidDate = newRentPaidDate
+        ? new Date(newRentPaidDate.split('T')[0] + 'T' + now.toTimeString().split(' ')[0]).toISOString()
+        : now.toISOString()
 
+      let periods = []
+      if (baseType === 'monthly' || baseType === 'quarterly' || baseType === 'yearly') {
+        const months = getMonthsInRange(fromDate, toDate)
+        if (months.length === 0) {
+          const m = fromDate.getMonth() + 1
+          const y = fromDate.getFullYear()
+          periods.push({ month: m, year: y, dueDate: new Date(y, m, 0).toISOString().split('T')[0] })
+        } else {
+          periods = months.map(({ month, year }) => ({
+            month, year,
+            dueDate: new Date(year, month, 0).toISOString().split('T')[0],
+          }))
+        }
+      } else if (baseType === 'weekly') {
+        let d = new Date(fromDate)
+        while (d < toDate) {
+          const m = d.getMonth() + 1
+          const y = d.getFullYear()
+          periods.push({ month: m, year: y, dueDate: new Date(y, m, 0).toISOString().split('T')[0] })
+          d.setDate(d.getDate() + 7)
+        }
+        if (periods.length === 0) {
+          const m = fromDate.getMonth() + 1
+          const y = fromDate.getFullYear()
+          periods.push({ month: m, year: y, dueDate: new Date(y, m, 0).toISOString().split('T')[0] })
+        }
+      } else {
+        const m = fromDate.getMonth() + 1
+        const y = fromDate.getFullYear()
+        periods.push({ month: m, year: y, dueDate: new Date(y, m, 0).toISOString().split('T')[0] })
+      }
+
+      const results = []
+      for (const { month, year, dueDate } of periods) {
         const obligation = await createRentObligation({
           userId,
           personId: person.id,

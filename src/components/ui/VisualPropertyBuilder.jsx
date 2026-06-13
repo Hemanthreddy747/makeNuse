@@ -144,7 +144,7 @@ function FloorSection({ floor, rooms, persons, onOpenPerson, onAddPerson, onUpda
   )
 }
 
-export default function VisualPropertyBuilder({ readOnly = false, collapsed: collapsedProp, onToggleCollapse }) {
+export default function VisualPropertyBuilder({ readOnly = false, collapsed: collapsedProp, onToggleCollapse, onPersonChange }) {
   const { user } = useAuth()
   const confirm = useConfirm()
   const [properties, setProperties] = useState([])
@@ -203,6 +203,7 @@ export default function VisualPropertyBuilder({ readOnly = false, collapsed: col
 
   const handlePersonChange = () => {
     load()
+    if (onPersonChange) onPersonChange()
   }
 
   const handleAddProperty = async () => {
