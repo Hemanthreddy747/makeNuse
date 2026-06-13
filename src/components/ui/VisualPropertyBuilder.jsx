@@ -90,7 +90,7 @@ function RoomCard({ room, persons, onOpenPerson, onAddPerson, onUpdateRoom, onDe
             onClick={() => onOpenPerson(person.id)}
             title="Click to manage"
           >
-            <User size={14} className="apt-bed-icon" />
+            {!person.name || !person.is_active ? <Bed size={14} className="apt-bed-icon" /> : <User size={14} className="apt-bed-icon" />}
             <span className="vi-label">{person.name && person.is_active ? person.name : 'Empty'}</span>
           </div>
         ))}
@@ -345,7 +345,7 @@ export default function VisualPropertyBuilder({ readOnly = false, collapsed: col
                         <div className="apt-beds">
                           {demoPersons.filter(p => p.room_id === room.id).map(person => (
                             <div key={person.id} className="apt-bed apt-bed--empty" onClick={demoHandleAddPerson} title="Add occupant">
-                              <User size={14} className="apt-bed-icon" />
+            {!person.name || !person.is_active ? <Bed size={14} className="apt-bed-icon" /> : <User size={14} className="apt-bed-icon" />}
                               <span className="vi-label">Empty</span>
                             </div>
                           ))}
