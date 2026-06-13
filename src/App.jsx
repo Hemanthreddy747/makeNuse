@@ -6,7 +6,7 @@ import { LoginModalProvider, useLoginModal } from './context/LoginModalContext'
 import { ConfirmProvider } from './context/ConfirmContext'
 import { ThemeProvider } from './context/ThemeContext'
 import AppLayout from './components/layout/AppLayout'
-import LandingPage from './pages/LandingPage'
+import Landing from './landing/Landing'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import LoginModal from './components/ui/LoginModal'
 import DashboardPage from './features/dashboard/DashboardPage'
@@ -63,7 +63,7 @@ function AppRoutes() {
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
 
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<Landing />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
