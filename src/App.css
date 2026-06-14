@@ -414,7 +414,7 @@ button:disabled {
   z-index: 50;
   display: flex;
   justify-content: center;
-  padding: 3px 0px;
+  /* padding: 3px 0px;   */
   background: linear-gradient(to bottom, var(--color-surface), transparent);
   pointer-events: none;
 }
@@ -2192,9 +2192,9 @@ button:disabled {
 }
 
 .apt-bed--empty {
-  background: #fef2f2;
-  border-color: #fca5a5;
-  color: #dc2626;
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #dc2626;
 }
 
 .apt-bed--empty:hover {
@@ -2394,7 +2394,8 @@ button:disabled {
 
 @media (max-width: 640px) {
   .apt-units {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
   .apt-room {
     max-width: 100%;
