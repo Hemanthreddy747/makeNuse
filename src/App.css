@@ -1932,6 +1932,33 @@ button:disabled {
   border-left: 2px solid #60a5fa;
 }
 
+.apt-body--loading {
+  position: relative;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.apt-demo-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(240, 247, 255, 0.7);
+  z-index: 2;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.apt-floor--disabled,
+.apt-room--disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
 /* ── Roof ── */
 .apt-roof-body {
   display: flex;
