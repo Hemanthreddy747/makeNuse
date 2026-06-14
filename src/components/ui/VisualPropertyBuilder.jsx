@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Trash2, Building2, Bed, DoorOpen, ChevronDown, User } from 'lucide-react'
+import { Plus, Trash2, Building2, Bed, DoorOpen, Maximize2, Minimize2, User } from 'lucide-react'
 import { useAuth } from '../../context/AuthProvider'
 import { useConfirm } from '../../context/ConfirmContext'
 import PersonDetailModal from './PersonDetailModal'
@@ -342,7 +342,6 @@ export default function VisualPropertyBuilder({ readOnly = false, collapsed: col
             <div className="apt-roof-body">
               <Building2 size={20} className="apt-roof-icon" />
               <InlineEdit value={demoProp.name} onSave={demoHandleEditName} />
-              <span className="apt-roof-badge">{demoProp.type}</span>
               <span className="apt-roof-meta">1 floor</span>
               <span className="apt-demo-badge">Quick Start</span>
               <button className="apt-icon-btn apt-icon-btn--del" onClick={demoHandleDelete} title="Dismiss">
@@ -399,14 +398,13 @@ export default function VisualPropertyBuilder({ readOnly = false, collapsed: col
                 <div className="apt-roof-body">
                   <Building2 size={20} className="apt-roof-icon" />
                   <InlineEdit value={property.name} onSave={name => handleUpdateProperty(property.id, name)} readOnly={readOnly} autoEdit={property.id === autoEditId} onAutoEditEnd={clearAutoEditId} />
-                  <span className="apt-roof-badge">{property.type}</span>
                   <span className="apt-roof-meta">{propertyFloors.length} floor{propertyFloors.length !== 1 ? 's' : ''}</span>
                   <button
                     className="apt-icon-btn apt-collapse-btn"
                     onClick={() => toggleCollapse(property.id)}
                     title={collapsed.has(property.id) ? 'Expand' : 'Collapse'}
                   >
-                    <ChevronDown size={16} className={`apt-chevron ${collapsed.has(property.id) ? 'apt-chevron--collapsed' : ''}`} />
+                    {collapsed.has(property.id) ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
                   </button>
                   {!readOnly && (
                     <button className="apt-icon-btn apt-icon-btn--del" onClick={() => handleDeleteProperty(property.id)} title="Delete building">

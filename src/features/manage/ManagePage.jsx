@@ -58,19 +58,15 @@ function StatCard({ icon: Icon, label, value, accent }) {
   )
 }
 
-function StatsGrid({ persons, rents }) {
+function StatsGrid({ persons }) {
   const roomPersons = persons.filter(p => p.room_id)
   const filledBeds = roomPersons.filter(p => p.name?.trim()).length
   const emptyBeds = roomPersons.filter(p => !p.name?.trim()).length
-  const collected = rents.filter(r => r.status === 'paid').reduce((s, r) => s + Number(r.amount), 0)
-  const due = rents.filter(r => r.status !== 'paid' && r.status !== 'cancelled').reduce((s, r) => s + Number(r.amount), 0)
 
   return (
     <div className="stats-grid">
       <StatCard icon={Users} label="Filled" value={filledBeds} accent="success" />
       <StatCard icon={Users} label="Empty" value={emptyBeds} accent="warning" />
-      <StatCard label="Collected" value={'\u20B9' + collected} accent="success" />
-      <StatCard label="Due" value={'\u20B9' + due} accent="danger" />
     </div>
   )
 }
