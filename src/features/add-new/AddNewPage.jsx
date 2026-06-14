@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthProvider'
-import { useSearchParams } from 'react-router-dom'
 import { Receipt, Building2 } from 'lucide-react'
 import VisualPropertyBuilder from '../../components/ui/VisualPropertyBuilder'
 import RentTypesManager from '../../components/ui/RentTypesManager'
@@ -13,8 +12,6 @@ const tabs = [
 
 export default function CreatePage() {
   const { user } = useAuth()
-  const [searchParams, setSearchParams] = useSearchParams()
-  const tabParam = searchParams.get('tab')
   const [activeTab, setActiveTab] = useState('builder')
 
   useEffect(() => {
@@ -23,17 +20,6 @@ export default function CreatePage() {
       if (data.length === 0) seedDefaultRentTypes(user.id)
     })
   }, [user])
-
-  useEffect(() => {
-    const validTabs = tabs.map(t => t.key)
-    if (tabParam && validTabs.includes(tabParam)) {
-      setActiveTab(tabParam)
-    }
-  }, [tabParam])
-
-  useEffect(() => {
-    setSearchParams({ tab: activeTab }, { replace: true })
-  }, [activeTab, setSearchParams])
 
   return (
     <div className="page-create">
