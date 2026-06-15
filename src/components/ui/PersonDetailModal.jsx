@@ -532,7 +532,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                   <select value={selectedTypeId} onChange={handleSelectType}>
                     <option value="">Select a rent type...</option>
                     {rentTypes.map(t => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
+                      <option key={t.id} value={t.id}>{t.name} ({t.type === 'monthly' ? 'month' : t.days + ' day' + (t.days > 1 ? 's' : '')})</option>
                     ))}
                   </select>
                   <FieldAlert type={alerts.rentType?.type} message={alerts.rentType?.message} />

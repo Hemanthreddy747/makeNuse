@@ -2711,7 +2711,6 @@ button:disabled {
 
 .react-datepicker__day--today {
   font-weight: var(--font-bold);
-  color: var(--color-primary);
 }
 
 .react-datepicker__day--disabled {
