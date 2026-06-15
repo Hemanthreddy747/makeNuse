@@ -1860,59 +1860,61 @@ button:disabled {
 }
 
 /* ═══════════════════════════════════════════════════════
-   APARTMENT BUILDER
+   PROPERTY BUILDER — Compact Card Design
    ═══════════════════════════════════════════════════════ */
 
-.apt-builder-header {
-  margin-bottom: var(--spacing-xl);
-}
-
-.apt-builder-header h2 {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-}
-
-.apt-list {
+.pb-list {
   display: grid;
-  gap: var(--spacing-xl);
+  gap: 20px;
 }
 
-.apt-empty {
-  text-align: center;
-  padding: var(--spacing-2xl) var(--spacing-lg);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
-  border: 1.5px dashed #cbd5e1;
-  border-radius: var(--radius-lg);
-  background: #f8fafc;
-}
-
-.apt-empty-icon {
-  color: var(--color-border);
-  margin-bottom: var(--spacing-lg);
-}
-
-/* ── Apartment building shell ── */
-.apt-building {
-  border-radius: var(--radius-xl);
+/* ── Property Card ── */
+.pb-card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #d1d5db;
 }
 
-.apt-building--demo {
-  background: #eff6ff;
-}
-.apt-building--demo .apt-body {
-  background: #f0f7ff;
-}
-.apt-building--demo .apt-roof-body {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+.pb-card--demo {
+  border: 1px solid #bfdbfe;
 }
 
-.apt-demo-badge {
+.pb-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pb-card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pb-card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pb-card-icon {
+  color: var(--color-primary, #7c3aed);
+  flex-shrink: 0;
+}
+
+.pb-card-header .pb-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.pb-badge {
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -1920,25 +1922,29 @@ button:disabled {
   background: #fbbf24;
   color: #78350f;
   padding: 2px 8px;
-  border-radius: var(--radius-pill);
+  border-radius: 999px;
 }
 
-.apt-floor--demo {
-  border-left: 3px solid #3b82f6;
-  background: #f0f7ff;
-}
-.apt-room--demo {
-  background: #eff6ff;
-  border-left: 2px solid #60a5fa;
+.pb-meta {
+  font-size: 13px;
+  color: var(--color-text-muted, #64748b);
 }
 
-.apt-body--loading {
+.pb-card-body {
+  padding: 4px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.pb-card-body.pb-loading {
   position: relative;
   opacity: 0.6;
   pointer-events: none;
 }
 
-.apt-demo-loader {
+.pb-demo-loader {
   position: absolute;
   inset: 0;
   display: flex;
@@ -1946,359 +1952,194 @@ button:disabled {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: rgba(240, 247, 255, 0.7);
+  background: rgba(255, 255, 255, 0.7);
   z-index: 2;
   font-size: 13px;
   font-weight: 600;
   color: #2563eb;
 }
 
-.apt-floor--disabled,
-.apt-room--disabled {
+.pb-disabled {
   pointer-events: none;
   opacity: 0.5;
 }
 
-/* ── Roof ── */
-.apt-roof-body {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  padding: 8px var(--spacing-md);
-  background: linear-gradient(135deg, #5b21b6, #4c1d95);
-  color: #fff;
-  font-weight: 700;
-  font-size: var(--font-size-lg);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+/* ── Floor ── */
+.pb-floor {
+  margin-bottom: 4px;
 }
 
-.apt-roof-icon {
-  flex-shrink: 0;
-  opacity: 0.85;
-}
-
-.apt-roof-body .vi-label {
-  color: #fff;
-  padding: 2px 6px;
-}
-
-.apt-roof-body .vi-label:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-sm);
-}
-
-.apt-roof-body .vi-input {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-
-.apt-roof-meta {
-  font-size: 13px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.65);
-  margin-left: auto;
-}
-
-.apt-roof-body .apt-icon-btn--del {
-  color: rgba(255, 255, 255, 0.5);
-}
-.apt-roof-body .apt-icon-btn--del:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-}
-
-.apt-collapse-btn {
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-pill);
-  transition: background 0.15s, color 0.15s;
-  margin-left: 8px;
-}
-.apt-collapse-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-}
-
-.apt-collapse-btn svg {
-  stroke-width: 3;
-}
-
-
-.apt-roof-body {
-  cursor: pointer;
-}
-
-/* ── Collapse animation ── */
-.apt-body {
-  overflow: hidden;
-  transition:
-    max-height 0.2s ease,
-    padding 0.2s ease,
-    opacity 0.15s ease;
-  padding: var(--spacing-sm) var(--spacing-md);
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  background: #f1f5f9;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* ── Single floor row ── */
-.apt-floor {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: var(--radius-lg);
-  padding: 3px var(--spacing-md);
-  position: relative;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
-  border-left: 3px solid #7c3aed;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-}
-
-.apt-floor:hover {
-  border-color: #c4b5fd;
-  box-shadow:
-    0 1px 4px rgba(124, 58, 237, 0.08),
-    0 1px 2px rgba(0, 0, 0, 0.03);
-}
-
-.apt-floor-label {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  margin-bottom: 1px;
-  padding-bottom: 0;
-  border-bottom: 1px solid #e2e8f0;
+.pb-floor-title {
+  font-size: 16px;
   font-weight: 600;
-  font-size: 14px;
-  color: #0f172a;
+  color: #334155;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.apt-floor-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #7c3aed;
-  flex-shrink: 0;
-}
-
-.apt-floor-label .vi-label {
-  flex: 1;
-}
-
-.apt-floor-count {
+.pb-floor-count {
   font-size: 12px;
   font-weight: 500;
   color: #64748b;
   background: #f1f5f9;
-  padding: 0 6px;
-  border-radius: var(--radius-pill);
+  padding: 1px 8px;
+  border-radius: 999px;
 }
 
-/* ── Apartment units row ── */
-.apt-units {
+.pb-floor--demo .pb-floor-title .pb-label {
+  color: #1e40af;
+}
+
+/* ── Rooms Grid ── */
+.pb-rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+/* ── Room Card ── */
+.pb-room-card {
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.pb-room-card--demo {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.pb-room-header {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 6px;
-  align-items: stretch;
-}
-
-/* ── Individual apartment unit ── */
-.apt-room {
-  background: #f5f3ff;
-  border: 1px solid #c4b5fd;
-  border-radius: var(--radius-md);
-  padding: 2px 5px;
-  min-width: 140px;
-  max-width: 140px;
-  position: relative;
-  transition:
-    box-shadow 0.15s,
-    border-color 0.15s;
-}
-
-.apt-room:hover {
-  border-color: #a78bfa;
-  box-shadow: 0 1px 4px rgba(167, 139, 250, 0.12);
-}
-
-.apt-room-head {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  padding-bottom: 0;
-  margin-bottom: 0;
-  font-size: 14px;
+  margin-bottom: 10px;
   font-weight: 600;
-  color: #4c1d95;
+  color: var(--color-primary, #7c3aed);
+  font-size: 14px;
 }
 
-.apt-room-icon {
+.pb-room-icon {
   flex-shrink: 0;
-  color: #7c3aed;
-  opacity: 0.65;
-}
-
-.apt-room-head .vi-label {
-  padding: 1px 2px;
-  font-size: 14px;
-}
-
-.apt-room-head .vi-input {
-  font-size: 14px;
-  padding: 1px 4px;
-  min-width: 30px;
-}
-
-/* ── Beds inside unit ── */
-.apt-beds {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.apt-bed {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 4px;
-  background: #f0fdf4;
-  border: 1px solid #86efac;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #16a34a;
-  cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition:
-    border-color 0.12s,
-    box-shadow 0.12s;
-}
-
-.apt-bed:hover {
-  border-color: #22c55e;
-  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15);
-}
-
-.apt-bed--empty {
-    background: #fef2f2;
-    border-color: #fca5a5;
-    color: #e14848;
-}
-
-.apt-bed--empty:hover {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12);
-}
-
-.apt-bed--former {
-  background: #f3f4f6;
-  border-color: #d1d5db;
-  color: #64748b;
-  cursor: default;
-}
-
-.apt-bed--former:hover {
-  border-color: #9ca3af;
-}
-
-.apt-bed-dates {
-  font-size: 12px;
-  color: #94a3b8;
-  margin-left: auto;
-  white-space: nowrap;
-}
-
-.apt-bed-icon {
-  flex-shrink: 0;
-  color: #22c55e;
   opacity: 0.7;
 }
 
-.apt-bed--empty .apt-bed-icon {
-  color: #ef4444;
-  opacity: 0.6;
-}
-
-.apt-bed .vi-label {
-  padding: 0 2px;
-  font-size: 14px;
+.pb-room-header .pb-label {
   flex: 1;
-  min-width: 16px;
-}
-
-.apt-bed .vi-input {
   font-size: 14px;
-  padding: 1px 3px;
-  min-width: 20px;
+  font-weight: 600;
+  color: #7c3aed;
 }
 
-/* ── Add bed ── */
-.apt-add-bed {
+.pb-room-rent {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 2px;
-  padding: 0 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+  background: #d1fae5;
+  padding: 1px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* ── Beds ── */
+.pb-beds {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pb-bed {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: box-shadow 0.12s;
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.pb-bed:hover {
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+}
+
+.pb-bed--empty {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.pb-bed--empty:hover {
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+}
+
+.pb-bed-label {
+  display: block;
+}
+
+/* ── Add Bed ── */
+.pb-add-bed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px;
   border: 1px dashed #d1d5db;
-  border-radius: 4px;
+  border-radius: 8px;
   background: transparent;
-  color: #94a3b8;
+  color: #9ca3af;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.12s;
-  min-height: 22px;
 }
 
-.apt-add-bed:hover {
-  border-color: #efc144;
-  color: #707070;
-  background: #fefef2;
-}
-
-/* ── Add unit (apartment) ── */
-.apt-add-unit {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 3px 10px;
-  border: 1.5px dashed #d1d5db;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: #94a3b8;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  min-height: 34px;
-  transition: all 0.15s;
-}
-
-.apt-add-unit:hover {
-  border-color: #a78bfa;
-  color: #7c3aed;
+.pb-add-bed:hover {
+  border-color: var(--color-primary, #7c3aed);
+  color: var(--color-primary, #7c3aed);
   background: #f5f3ff;
 }
 
-/* ── Add floor ── */
-.apt-add-floor {
+/* ── Add Room ── */
+.pb-add-room {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-2);
-  padding: 4px var(--spacing-md);
+  gap: 6px;
+  padding: 10px;
   border: 1.5px dashed #d1d5db;
-  border-radius: var(--radius-lg);
+  border-radius: 12px;
   background: transparent;
-  color: #94a3b8;
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 80px;
+}
+
+.pb-add-room:hover {
+  border-color: var(--color-primary, #7c3aed);
+  color: var(--color-primary, #7c3aed);
+  background: #f5f3ff;
+}
+
+/* ── Add Floor ── */
+.pb-add-floor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1.5px dashed #d1d5db;
+  border-radius: 12px;
+  background: transparent;
+  color: #9ca3af;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -2306,82 +2147,94 @@ button:disabled {
   transition: all 0.15s;
 }
 
-.apt-add-floor:hover {
-  border-color: #7c3aed;
-  color: #7c3aed;
+.pb-add-floor:hover {
+  border-color: var(--color-primary, #7c3aed);
+  color: var(--color-primary, #7c3aed);
   background: #f5f3ff;
 }
 
-/* ── Add building ── */
-.apt-add-building {
+/* ── Add Property ── */
+.pb-add-property {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-2);
-  margin-top: var(--spacing-lg);
-  padding: 10px 24px;
-  border: 1.5px dashed #cbd5e1;
-  border-radius: var(--radius-xl);
-  background: #f8fafc;
-  color: #64748b;
-  font-size: var(--font-size-base);
+  gap: 8px;
+  margin-top: 20px;
+  padding: 12px 24px;
+  border: 1.5px dashed #d1d5db;
+  border-radius: 16px;
+  background: #fafafa;
+  color: #9ca3af;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   width: 100%;
   transition: all 0.15s;
 }
 
-.apt-add-building:hover {
-  background: #ede9fe;
-  border-color: #7c3aed;
-  color: #5b21b6;
-  box-shadow: 0 1px 3px rgba(124, 58, 237, 0.1);
+.pb-add-property:hover {
+  background: #f5f3ff;
+  border-color: var(--color-primary, #7c3aed);
+  color: var(--color-primary, #7c3aed);
 }
 
-/* ── Shared icon button ── */
-.apt-icon-btn {
+/* ── Collapse Button ── */
+.pb-collapse-btn {
+  color: var(--color-text-muted, #64748b);
+  background: #f1f5f9;
+  border-radius: 999px;
+  transition: background 0.15s;
+}
+
+.pb-collapse-btn:hover {
+  background: #e2e8f0;
+  color: var(--color-text, #0f172a);
+}
+
+/* ── Shared Icon Button ── */
+.pb-icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 6px;
   background: transparent;
   cursor: pointer;
   padding: 0;
   transition: all 0.12s;
 }
 
-.apt-icon-btn--del {
-  color: var(--color-text-muted);
+.pb-icon-btn--del {
+  color: var(--color-text-muted, #64748b);
 }
 
-.apt-icon-btn--del:hover {
-  background: var(--color-danger-bg);
-  color: var(--color-danger);
+.pb-icon-btn--del:hover {
+  background: var(--color-danger-bg, #fee2e2);
+  color: var(--color-danger, #dc2626);
 }
 
-/* ── Shared inline edit ── */
-.vi-label {
+/* ── Shared Inline Edit ── */
+.pb-label {
   cursor: pointer;
-  padding: 1px 3px;
-  border-radius: var(--radius-sm);
+  padding: 1px 4px;
+  border-radius: 4px;
   min-width: 16px;
   display: inline-block;
 }
 
-.vi-label:hover {
+.pb-label:hover {
   background: rgba(0, 0, 0, 0.05);
 }
 
-.vi-input {
+.pb-input {
   font-size: inherit;
   font-family: inherit;
   font-weight: inherit;
-  padding: 1px 4px;
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  border: 1px solid var(--color-primary, #7c3aed);
+  border-radius: 6px;
   outline: none;
   background: #fff;
   min-width: 50px;
@@ -2389,12 +2242,8 @@ button:disabled {
 }
 
 @media (max-width: 640px) {
-  .apt-units {
-    display: grid;
+  .pb-rooms-grid {
     grid-template-columns: 1fr 1fr;
-  }
-  .apt-room {
-    max-width: 100%;
   }
 }
 

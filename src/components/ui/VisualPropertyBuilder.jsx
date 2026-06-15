@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Trash2, Building2, Bed, DoorOpen, Maximize2, Minimize2, User } from 'lucide-react'
+import { Plus, Trash2, Building2, DoorOpen, Maximize2, Minimize2, IndianRupee } from 'lucide-react'
 import { useAuth } from '../../context/AuthProvider'
 import { useConfirm } from '../../context/ConfirmContext'
 import PersonDetailModal from './PersonDetailModal'
@@ -43,14 +43,14 @@ function InlineEdit({ value, onSave, readOnly, autoEdit, onAutoEditEnd }) {
   }
 
   if (readOnly) {
-    return <span className="vi-label">{value}</span>
+    return <span className="pb-label">{value}</span>
   }
 
   if (editing) {
     return (
       <input
         ref={inputRef}
-        className="vi-input"
+        className="pb-input"
         value={val}
         onChange={e => setVal(e.target.value)}
         onBlur={submit}
@@ -61,7 +61,7 @@ function InlineEdit({ value, onSave, readOnly, autoEdit, onAutoEditEnd }) {
   }
 
   return (
-    <span className="vi-label" onClick={() => setEditing(true)} title="Click to edit">
+    <span className="pb-label" onClick={() => setEditing(true)} title="Click to edit">
       {value}
     </span>
   )
@@ -73,31 +73,37 @@ function RoomCard({ room, persons, onOpenPerson, onAddPerson, onUpdateRoom, onDe
     .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0))
 
   return (
-    <div className="apt-room">
-      <div className="apt-room-head">
-        <DoorOpen size={16} className="apt-room-icon" />
+    <div className="pb-room-card">
+      <div className="pb-room-header">
+        <DoorOpen size={15} className="pb-room-icon" />
         <InlineEdit value={room.name} onSave={name => onUpdateRoom(room.id, name)} readOnly={readOnly} autoEdit={room.id === autoEditId} onAutoEditEnd={onAutoEditEnd} />
+        {roomPersons.length > 0 && roomPersons[0].rent_amount && (
+          <span className="pb-room-rent">
+            <IndianRupee size={11} />{roomPersons[0].rent_amount}
+          </span>
+        )}
         {!readOnly && (
-          <button className="apt-icon-btn apt-icon-btn--del" onClick={() => onDeleteRoom(room.id)} title="Delete room">
-            <Trash2 size={13} />
+          <button className="pb-icon-btn pb-icon-btn--del" onClick={() => onDeleteRoom(room.id)} title="Delete room">
+            <Trash2 size={12} />
           </button>
         )}
       </div>
-      <div className="apt-beds">
+      <div className="pb-beds">
         {roomPersons.map(person => (
           <div
             key={person.id}
-            className={`apt-bed${!person.name || !person.is_active ? ' apt-bed--empty' : ''}`}
+            className={`pb-bed${!person.name || !person.is_active ? ' pb-bed--empty' : ''}`}
             onClick={() => onOpenPerson(person.id)}
             title="Click to manage"
           >
-            {!person.name || !person.is_active ? <Bed size={14} className="apt-bed-icon" /> : <User size={14} className="apt-bed-icon" />}
-            <span className="vi-label">{person.name && person.is_active ? person.name : 'Empty'}</span>
+            <span className="pb-bed-label">
+              {person.name && person.is_active ? person.name : 'Empty'}
+            </span>
           </div>
         ))}
         {!readOnly && (
-          <button className="apt-add-bed" onClick={() => onAddPerson(room.property_id, room.floor_id, room.id)} title="Add person">
-            <Plus size={13} /> Bed
+          <button className="pb-add-bed" onClick={() => onAddPerson(room.property_id, room.floor_id, room.id)} title="Add person">
+            <Plus size={12} /> Bed
           </button>
         )}
       </div>
@@ -109,18 +115,17 @@ function FloorSection({ floor, rooms, persons, onOpenPerson, onAddPerson, onUpda
   const floorRooms = rooms.filter(r => r.floor_id === floor.id)
 
   return (
-    <div className="apt-floor">
-      <div className="apt-floor-label">
-        <span className="apt-floor-dot" />
+    <div className="pb-floor">
+      <div className="pb-floor-title">
         <InlineEdit value={floor.name} onSave={name => onUpdateFloor(floor.id, name)} readOnly={readOnly} autoEdit={floor.id === autoEditId} onAutoEditEnd={onAutoEditEnd} />
-        <span className="apt-floor-count">{floorRooms.length} room{floorRooms.length !== 1 ? 's' : ''}</span>
+        <span className="pb-floor-count">{floorRooms.length} room{floorRooms.length !== 1 ? 's' : ''}</span>
         {!readOnly && (
-          <button className="apt-icon-btn apt-icon-btn--del" onClick={() => onDeleteFloor(floor.id)} title="Delete floor">
-            <Trash2 size={14} />
+          <button className="pb-icon-btn pb-icon-btn--del" onClick={() => onDeleteFloor(floor.id)} title="Delete floor">
+            <Trash2 size={13} />
           </button>
         )}
       </div>
-      <div className="apt-units">
+      <div className="pb-rooms-grid">
         {floorRooms.map(room => (
           <RoomCard
             key={room.id}
@@ -136,7 +141,7 @@ function FloorSection({ floor, rooms, persons, onOpenPerson, onAddPerson, onUpda
           />
         ))}
         {!readOnly && (
-          <button className="apt-add-unit" onClick={() => onAddRoom(floor.property_id, floor.id)} title="Add room">
+          <button className="pb-add-room" onClick={() => onAddRoom(floor.property_id, floor.id)} title="Add room">
             <Plus size={16} /> Room
           </button>
         )}
@@ -343,53 +348,55 @@ export default function VisualPropertyBuilder({ readOnly = false, collapsed: col
   if (loading) return <Loader />
 
   return (
-    <div className="apt-builder">
+    <div className="pb">
 
-      <div className="apt-list">
+      <div className="pb-list">
         {!readOnly && properties.length === 0 && !demoDismissed && (
-          <div className="apt-building apt-building--demo">
-            <div className="apt-roof-body">
-              <Building2 size={20} className="apt-roof-icon" />
-              <InlineEdit value={demoPropName} onSave={setDemoPropName} />
-              <span className="apt-roof-meta">{demoFloorsData.length} floors</span>
-              <span className="apt-demo-badge">Quick Start</span>
-              <button className="apt-icon-btn apt-icon-btn--del" onClick={demoHandleDismiss} title="Dismiss quick start">
-                <Trash2 size={15} />
-              </button>
+          <div className="pb-card pb-card--demo">
+            <div className="pb-card-header">
+              <div className="pb-card-header-left">
+                <Building2 size={18} className="pb-card-icon" />
+                <InlineEdit value={demoPropName} onSave={setDemoPropName} />
+                <span className="pb-badge">Quick Start</span>
+              </div>
+              <div className="pb-card-header-right">
+                <span className="pb-meta">{demoFloorsData.length} floors</span>
+                <button className="pb-icon-btn pb-icon-btn--del" onClick={demoHandleDismiss} title="Dismiss">
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
-            <div className={`apt-body${demoLoading ? ' apt-body--loading' : ''}`}>
+            <div className={`pb-card-body${demoLoading ? ' pb-loading' : ''}`}>
               {demoLoading && (
-                <div className="apt-demo-loader">
+                <div className="pb-demo-loader">
                   <div className="loader loader-sm" />
                   <span>Importing...</span>
                 </div>
               )}
-              <button className="apt-add-floor" onClick={() => demoHandleClick()} disabled={demoLoading} title="Import demo">
-                <Plus size={18} /> Import Quick Start
+              <button className="pb-add-floor" onClick={() => demoHandleClick()} disabled={demoLoading} title="Import demo">
+                <Plus size={16} /> Add Floor
               </button>
               {demoFloorsData.map(floor => (
-                <div key={floor.id} className={`apt-floor apt-floor--demo${demoLoading ? ' apt-floor--disabled' : ''}`}>
-                  <div className="apt-floor-label">
-                    <span className="apt-floor-dot" />
+                <div key={floor.id} className={`pb-floor pb-floor--demo${demoLoading ? ' pb-disabled' : ''}`}>
+                  <div className="pb-floor-title">
                     <InlineEdit value={floor.name} onSave={name => updateDemoFloorName(floor.id, name)} />
-                    <span className="apt-floor-count">{floor.rooms.length} rooms</span>
+                    <span className="pb-floor-count">{floor.rooms.length} rooms</span>
                   </div>
-                  <div className="apt-units">
+                  <div className="pb-rooms-grid">
                     {floor.rooms.map((room, ri) => (
-                      <div key={room} className={`apt-room apt-room--demo${demoLoading ? ' apt-room--disabled' : ''}`}>
-                        <div className="apt-room-head">
-                          <DoorOpen size={16} className="apt-room-icon" />
+                      <div key={room} className={`pb-room-card pb-room-card--demo${demoLoading ? ' pb-disabled' : ''}`}>
+                        <div className="pb-room-header">
+                          <DoorOpen size={15} className="pb-room-icon" />
                           <InlineEdit value={room} onSave={name => updateDemoRoomName(floor.id, ri, name)} />
                         </div>
-                        <div className="apt-beds">
+                        <div className="pb-beds">
                           {[1, 2].map(i => (
-                            <div key={i} className="apt-bed apt-bed--empty" onClick={demoLoading ? undefined : () => demoHandleClick('addPerson')} title="Add occupant">
-                              <Bed size={14} className="apt-bed-icon" />
-                              <span className="vi-label">Empty</span>
+                            <div key={i} className="pb-bed pb-bed--empty" onClick={demoLoading ? undefined : () => demoHandleClick('addPerson')} title="Add occupant">
+                              <span className="pb-bed-label">Empty</span>
                             </div>
                           ))}
-                          <button className="apt-add-bed" onClick={demoLoading ? undefined : () => demoHandleClick('addPerson')} disabled={demoLoading} title="Add person">
-                            <Plus size={13} /> Bed
+                          <button className="pb-add-bed" onClick={demoLoading ? undefined : () => demoHandleClick('addPerson')} disabled={demoLoading} title="Add person">
+                            <Plus size={12} /> Bed
                           </button>
                         </div>
                       </div>
@@ -405,32 +412,34 @@ export default function VisualPropertyBuilder({ readOnly = false, collapsed: col
           const propertyFloors = floors.filter(f => f.property_id === property.id)
 
           return (
-            <div key={property.id} className="apt-building">
-              <div className="apt-roof">
-                <div className="apt-roof-body">
-                  <Building2 size={20} className="apt-roof-icon" />
+            <div key={property.id} className="pb-card">
+              <div className="pb-card-header" onClick={() => toggleCollapse(property.id)}>
+                <div className="pb-card-header-left">
+                  <Building2 size={18} className="pb-card-icon" />
                   <InlineEdit value={property.name} onSave={name => handleUpdateProperty(property.id, name)} readOnly={readOnly} autoEdit={property.id === autoEditId} onAutoEditEnd={clearAutoEditId} />
-                  <span className="apt-roof-meta">{propertyFloors.length} floor{propertyFloors.length !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="pb-card-header-right">
+                  <span className="pb-meta">{propertyFloors.length} floor{propertyFloors.length !== 1 ? 's' : ''}</span>
                   <button
-                    className="apt-icon-btn apt-collapse-btn"
-                    onClick={() => toggleCollapse(property.id)}
+                    className="pb-icon-btn pb-collapse-btn"
+                    onClick={e => { e.stopPropagation(); toggleCollapse(property.id) }}
                     title={collapsed.has(property.id) ? 'Expand' : 'Collapse'}
                   >
-                    {collapsed.has(property.id) ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
+                    {collapsed.has(property.id) ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
                   </button>
                   {!readOnly && (
-                    <button className="apt-icon-btn apt-icon-btn--del" onClick={() => handleDeleteProperty(property.id)} title="Delete building">
-                      <Trash2 size={15} />
+                    <button className="pb-icon-btn pb-icon-btn--del" onClick={e => { e.stopPropagation(); handleDeleteProperty(property.id) }} title="Delete property">
+                      <Trash2 size={14} />
                     </button>
                   )}
                 </div>
               </div>
 
               {!collapsed.has(property.id) && (
-                <div className="apt-body">
+                <div className="pb-card-body">
                   {!readOnly && (
-                    <button className="apt-add-floor" onClick={() => handleAddFloor(property.id)} title="Add floor">
-                      <Plus size={18} /> Add Floor
+                    <button className="pb-add-floor" onClick={() => handleAddFloor(property.id)} title="Add floor">
+                      <Plus size={16} /> Add Floor
                     </button>
                   )}
                   {propertyFloors.map(floor => (
@@ -459,7 +468,7 @@ export default function VisualPropertyBuilder({ readOnly = false, collapsed: col
       </div>
 
       {!readOnly && (
-        <button className="apt-add-building" onClick={handleAddProperty}>
+        <button className="pb-add-property" onClick={handleAddProperty}>
           <Plus size={20} /> Add Property
         </button>
       )}
