@@ -10,10 +10,12 @@ import {
   logEvent,
 } from '../../lib/rentals'
 import { formatDateTime } from '../../lib/dates'
+import { toastError } from '../../lib/errors'
 import DatePicker from './DatePicker'
 import FieldAlert from './FieldAlert'
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024
+const TOTAL_DOC_SIZE_LIMIT = 5 * 1024 * 1024
 
 function compressImage(file) {
   return new Promise((resolve, reject) => {
@@ -327,7 +329,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
       setRents(prev => [...results, ...prev])
       setAddingRent(false)
     } catch (err) {
-      alert(err.message)
+      toastError(err.message)
     } finally {
       setSaving(false)
     }
@@ -379,7 +381,15 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
     if (!files?.length) return
     const remaining = 3 - documents.length
     if (files.length > remaining) {
-      alert(`You can only add ${remaining} more file(s). Max 3 allowed.`)
+      toastError(`You can only add ${remaining} more file(s). Max 3 allowed.`)
+      return
+    }
+    const currentTotal = documents.reduce((sum, d) => sum + (d.file_size || 0), 0)
+    const newTotal = currentTotal + [...files].reduce((sum, f) => sum + f.size, 0)
+    if (newTotal > TOTAL_DOC_SIZE_LIMIT) {
+      const maxMB = TOTAL_DOC_SIZE_LIMIT / (1024 * 1024)
+      const currentMB = (currentTotal / (1024 * 1024)).toFixed(1)
+      toastError(`Total document size would exceed ${maxMB}MB (currently ${currentMB}MB). Please delete some documents first.`)
       return
     }
     setUploading(true)
@@ -390,7 +400,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
           if (file.type.startsWith('image/')) {
             uploadFile = await compressImage(file)
           } else {
-            alert(`${file.name} is over 4MB. Only images can be auto-compressed.`)
+            toastError(`${file.name} is over 4MB. Only images can be auto-compressed.`)
             continue
           }
         }
@@ -398,7 +408,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
         setDocuments(prev => [doc, ...prev])
       }
     } catch (err) {
-      alert(err.message)
+      toastError(err.message)
     } finally {
       setUploading(false)
       e.target.value = ''
@@ -417,7 +427,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
       const url = await getPersonDocumentUrl(filePath)
       window.open(url, '_blank')
     } catch (err) {
-      alert('Failed to open document')
+      toastError('Failed to open document')
     }
   }
 
@@ -477,7 +487,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                 </div>
               </div>
               <div className="pd-field">
-                <label>Documents {documents.length > 0 && <span className="pd-doc-count">({documents.length}/3)</span>}</label>
+                <label>Documents {documents.length > 0 && <span className="pd-doc-count">({documents.length}/3 · {(documents.reduce((s, d) => s + (d.file_size || 0), 0) / (1024 * 1024)).toFixed(1)}MB/5MB)</span>}</label>
                 <div className="pd-docs-area">
                   {documents.length > 0 && (
                     <div className="pd-doc-list">

@@ -532,6 +532,7 @@ export async function uploadPersonDocument({ userId, personId, file }) {
       file_name: file.name,
       file_path: filePath,
       file_type: file.type || null,
+      file_size: file.size,
     })
     .select()
     .single()
