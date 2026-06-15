@@ -429,7 +429,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                   {documents.length < 3 && (
                     <>
                       <label className="pd-upload-label" title="Take photo">
-                        <Camera size={12} />
+                        <Camera size={16} />
                         <input
                           type="file"
                           accept="image/*"
@@ -454,7 +454,8 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                   )}
                 </div>
                 {documents.length === 0 ? (
-                  <p className="pd-empty">No documents yet.</p>
+                  // <p className="pd-empty"></p>
+                  <></>
                 ) : (
                   <div className="pd-doc-list">
                     {documents.map(doc => (

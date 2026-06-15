@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Trash2, Building2, DoorOpen, Maximize2, Minimize2, IndianRupee } from 'lucide-react'
+import { Plus, Trash2, Building2, Bed, DoorOpen, Maximize2, Minimize2, IndianRupee } from 'lucide-react'
 import { useAuth } from '../../context/AuthProvider'
 import { useConfirm } from '../../context/ConfirmContext'
 import PersonDetailModal from './PersonDetailModal'
@@ -96,8 +96,9 @@ function RoomCard({ room, persons, onOpenPerson, onAddPerson, onUpdateRoom, onDe
             onClick={() => onOpenPerson(person.id)}
             title="Click to manage"
           >
+            <Bed size={13} className="pb-bed-icon" />
             <span className="pb-bed-label">
-              {person.name && person.is_active ? person.name : 'Empty'}
+              {person.name && person.is_active ? person.name : 'Available'}
             </span>
           </div>
         ))}
@@ -392,7 +393,8 @@ export default function VisualPropertyBuilder({ readOnly = false, collapsed: col
                         <div className="pb-beds">
                           {[1, 2].map(i => (
                             <div key={i} className="pb-bed pb-bed--empty" onClick={demoLoading ? undefined : () => demoHandleClick('addPerson')} title="Add occupant">
-                              <span className="pb-bed-label">Empty</span>
+                              <Bed size={13} className="pb-bed-icon" />
+                              <span className="pb-bed-label">Available</span>
                             </div>
                           ))}
                           <button className="pb-add-bed" onClick={demoLoading ? undefined : () => demoHandleClick('addPerson')} disabled={demoLoading} title="Add person">

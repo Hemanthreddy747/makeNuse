@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthProvider'
 import {
   fetchPersonsPaginated, fetchPersons, deletePerson, updatePerson,
@@ -73,6 +74,7 @@ function StatsGrid({ persons }) {
 
 export default function ManagePage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('properties')
   const [roomPersons, setRoomPersons] = useState([])
   const [roomPersonsCount, setRoomPersonsCount] = useState(0)
@@ -239,7 +241,20 @@ export default function ManagePage() {
           <Loader />
         ) : (
           <>
-            {activeTab === 'properties' && <VisualPropertyBuilder readOnly collapsed={collapsed} onToggleCollapse={toggleCollapse} onPersonChange={load} />}
+            {activeTab === 'properties' && (
+              rooms.length === 0 && !loading
+                ? (
+                  <div className="pb-empty-state">
+                    <Building2 size={40} className="pb-empty-icon" />
+                    <h3>No properties yet</h3>
+                    <p>Create your first property to start managing tenants and rent.</p>
+                    <button className="pb-empty-btn" onClick={() => navigate('/create')}>
+                      <Plus size={18} /> Create Property
+                    </button>
+                  </div>
+                )
+                : <VisualPropertyBuilder readOnly collapsed={collapsed} onToggleCollapse={toggleCollapse} onPersonChange={load} />
+            )}
 
             {activeTab === 'persons' && (
               <>
