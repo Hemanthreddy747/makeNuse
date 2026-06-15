@@ -6,12 +6,12 @@ import {
 } from '../../lib/rentals'
 
 const BASE_TYPES = [
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'daily', label: 'Daily' },
-  { value: 'quarterly', label: 'Quarterly' },
-  { value: 'yearly', label: 'Yearly' },
-  { value: 'custom', label: 'Custom' },
+  { value: 'monthly', label: 'Monthly', defaultDays: '30/31' },
+  { value: 'weekly', label: 'Weekly', defaultDays: 7 },
+  { value: 'daily', label: 'Daily', defaultDays: 1 },
+  { value: 'quarterly', label: 'Quarterly', defaultDays: 90 },
+  { value: 'yearly', label: 'Yearly', defaultDays: 365 },
+  { value: 'custom', label: 'Custom', defaultDays: '' },
 ]
 
 export default function RentTypesManager({ userId, onTypesChange }) {
@@ -22,10 +22,12 @@ export default function RentTypesManager({ userId, onTypesChange }) {
   const [newName, setNewName] = useState('')
   const [newType, setNewType] = useState('monthly')
   const [newAmount, setNewAmount] = useState('')
+  const [newDays, setNewDays] = useState('')
   const [editingId, setEditingId] = useState(null)
   const [editName, setEditName] = useState('')
   const [editType, setEditType] = useState('')
   const [editAmount, setEditAmount] = useState('')
+  const [editDays, setEditDays] = useState('')
   const loadingRef = useRef(false)
 
   const load = () => {
@@ -47,9 +49,10 @@ export default function RentTypesManager({ userId, onTypesChange }) {
       name: newName.trim(),
       type: newType,
       amount: newAmount ? parseFloat(newAmount) : null,
+      days: newDays && newDays !== '30/31' ? parseInt(newDays) : null,
     })
     setTypes(prev => [...prev, data])
-    setNewName(''); setNewType('monthly'); setNewAmount('')
+    setNewName(''); setNewType('monthly'); setNewAmount(''); setNewDays('')
     setAdding(false)
     if (onTypesChange) onTypesChange([...types, data])
   }
@@ -73,6 +76,7 @@ export default function RentTypesManager({ userId, onTypesChange }) {
     setEditName(rentType.name)
     setEditType(rentType.type)
     setEditAmount(rentType.amount || '')
+    setEditDays(rentType.days || '')
   }
 
   const cancelEdit = () => setEditingId(null)
@@ -83,6 +87,7 @@ export default function RentTypesManager({ userId, onTypesChange }) {
       name: editName.trim(),
       type: editType,
       amount: editAmount ? parseFloat(editAmount) : null,
+      days: editDays && editDays !== '30/31' ? parseInt(editDays) : null,
     })
     setEditingId(null)
   }
@@ -104,9 +109,10 @@ export default function RentTypesManager({ userId, onTypesChange }) {
       {adding && (
         <div className="rtt-add">
           <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Name" autoFocus />
-          <select value={newType} onChange={e => setNewType(e.target.value)}>
+          <select value={newType} onChange={e => { const t = BASE_TYPES.find(bt => bt.value === e.target.value); setNewType(e.target.value); setNewDays(t?.defaultDays ?? '') }}>
             {BASE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
+          <input type="number" min="1" value={newDays} onChange={e => setNewDays(e.target.value)} placeholder={newType === 'monthly' ? '30/31' : 'Days'} />
           <input type="number" step="0.01" value={newAmount} onChange={e => setNewAmount(e.target.value)} placeholder="Amount" />
           <button className="rtt-btn rtt-btn--primary" onClick={handleAdd} disabled={!newName.trim()}>
             <Check size={14} />
@@ -126,6 +132,7 @@ export default function RentTypesManager({ userId, onTypesChange }) {
               <tr>
                 <th>Name</th>
                 <th>Type</th>
+                <th>Days</th>
                 <th>Amount</th>
                 <th className="rtt-th-actions"></th>
               </tr>
@@ -140,10 +147,11 @@ export default function RentTypesManager({ userId, onTypesChange }) {
                     <tr key={rentType.id} className="rtt-row-editing">
                       <td><input value={editName} onChange={e => setEditName(e.target.value)} autoFocus /></td>
                       <td>
-                        <select value={editType} onChange={e => setEditType(e.target.value)}>
+                        <select value={editType} onChange={e => { const t = BASE_TYPES.find(bt => bt.value === e.target.value); setEditType(e.target.value); setEditDays(t?.defaultDays ?? '') }}>
                           {BASE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                         </select>
                       </td>
+                      <td><input type="number" min="1" value={editDays} onChange={e => setEditDays(e.target.value)} placeholder="—" /></td>
                       <td><input type="number" step="0.01" value={editAmount} onChange={e => setEditAmount(e.target.value)} placeholder="—" /></td>
                       <td>
                         <div className="rtt-row-actions">
@@ -159,6 +167,7 @@ export default function RentTypesManager({ userId, onTypesChange }) {
                   <tr key={rentType.id}>
                     <td><span className="rtt-name">{rentType.name}</span></td>
                     <td><span className="rtt-type">{typeLabel}</span></td>
+                    <td>{rentType.days != null ? `${rentType.days}` : rentType.type === 'monthly' ? <span className="rtt-muted">30/31</span> : <span className="rtt-muted">—</span>}</td>
                     <td>{rentType.amount != null ? `₹${Number(rentType.amount).toLocaleString('en-IN')}` : <span className="rtt-muted">—</span>}</td>
                     <td>
                       <div className="rtt-row-actions">

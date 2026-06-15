@@ -441,14 +441,16 @@ export async function fetchPropertyTree(userId, propertyId) {
 
 /* ── Rent Types ──────────────────────── */
 
+const TYPE_DAYS = { daily: 1, weekly: 7, monthly: 30, quarterly: 90, yearly: 365, custom: null }
+
 const DEFAULT_RENT_TYPES = [
-  { name: '1 day', type: 'daily', amount: 400 },
-  { name: '15 days', type: 'weekly', amount: 4800 },
-  { name: '2 days', type: 'daily', amount: 800 },
-  { name: 'monthly 2 share', type: 'monthly', amount: 10000 },
-  { name: 'monthly 3 share', type: 'monthly', amount: 8500 },
-  { name: 'monthly 4 share', type: 'monthly', amount: 8000 },
-  { name: 'weekly', type: 'weekly', amount: 2500 },
+  { name: '1 day', type: 'daily', days: 1, amount: 400 },
+  { name: '2 days', type: 'daily', days: 2, amount: 800 },
+  { name: 'Weekly', type: 'weekly', days: 7, amount: 2500 },
+  { name: '15 days', type: 'custom', days: 15, amount: 4800 },
+  { name: 'Monthly 2 share', type: 'monthly', days: null, amount: 10000 },
+  { name: 'Monthly 3 share', type: 'monthly', days: null, amount: 8500 },
+  { name: 'Monthly 4 share', type: 'monthly', days: null, amount: 8000 },
 ]
 
 export async function fetchRentTypes(userId) {
@@ -467,6 +469,7 @@ export async function seedDefaultRentTypes(userId) {
     name: rt.name,
     type: rt.type,
     amount: rt.amount,
+    days: rt.days,
   }))
   const { error } = await supabase
     .from('rent_types')
@@ -474,10 +477,10 @@ export async function seedDefaultRentTypes(userId) {
   if (error) throw error
 }
 
-export async function createRentType({ userId, name, type, amount, dueDay }) {
+export async function createRentType({ userId, name, type, amount, dueDay, days }) {
   const { data, error } = await supabase
     .from('rent_types')
-    .insert({ user_id: userId, name, type: type || 'monthly', amount: amount || null, due_day: dueDay || null })
+    .insert({ user_id: userId, name, type: type || 'monthly', amount: amount || null, due_day: dueDay || null, days: days || null })
     .select()
     .single()
   if (error) throw error

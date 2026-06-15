@@ -11,6 +11,7 @@ import {
 } from '../../lib/rentals'
 import { formatDateTime } from '../../lib/dates'
 import DatePicker from './DatePicker'
+import FieldAlert from './FieldAlert'
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024
 
@@ -85,9 +86,10 @@ function getMonthsInRange(from, to) {
   return months
 }
 
-function computeToDate(baseType, fromDateStr) {
-  const d = fromDateStr ? new Date(fromDateStr) : new Date()
-  if (baseType === 'monthly') d.setMonth(d.getMonth() + 1)
+function computeToDate(baseType, fromDateStr, fromTimeStr, days) {
+  const d = fromDateStr ? new Date(fromDateStr + (fromTimeStr ? `T${fromTimeStr}` : 'T00:00:00')) : new Date()
+  if (days) d.setDate(d.getDate() + days)
+  else if (baseType === 'monthly') d.setMonth(d.getMonth() + 1)
   else if (baseType === 'weekly') d.setDate(d.getDate() + 7)
   else if (baseType === 'daily') d.setDate(d.getDate() + 1)
   else if (baseType === 'quarterly') d.setMonth(d.getMonth() + 3)
@@ -98,9 +100,13 @@ function computeToDate(baseType, fromDateStr) {
 
 export default function PersonDetailModal({ person, userId, onClose, onPersonChange }) {
   const confirm = useConfirm()
+  const [alerts, setAlerts] = useState({})
   const [name, setName] = useState(person.name || '')
   const [phone, setPhone] = useState(person.phone || '')
-  const [moveInDate, setMoveInDate] = useState(person.move_in_date || '')
+  const [moveInDate, setMoveInDate] = useState(person.move_in_date || new Date().toISOString().split('T')[0])
+  const [checkinTime, setCheckinTime] = useState(person.checkin_time || new Date().toTimeString().slice(0, 5))
+  const [showNote, setShowNote] = useState(!!person.notes)
+  const [notes, setNotes] = useState(person.notes || '')
   const [selectedTypeId, setSelectedTypeId] = useState(person.rent_type_id || '')
   const [rentAmount, setRentAmount] = useState(person.rent_amount || '')
   const [rents, setRents] = useState([])
@@ -115,6 +121,8 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
   const [checkoutDate, setCheckoutDate] = useState(new Date().toISOString().split('T')[0])
   const [newRentFrom, setNewRentFrom] = useState(person.move_in_date || '')
   const [newRentTo, setNewRentTo] = useState('')
+  const [newRentToTime, setNewRentToTime] = useState('')
+  const [rentDaysCount, setRentDaysCount] = useState(0)
 
   useEffect(() => {
     fetchRentObligationsByPerson(person.id).then(setRents).catch(() => {})
@@ -130,14 +138,35 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
 
   const selectedType = rentTypes.find(t => t.id === selectedTypeId)
 
-  const handleSavePerson = async (overrides = {}) => {
+  useEffect(() => {
+    if (!moveInDate || !selectedType) return
+    const baseType = selectedType?.type || 'monthly'
+    const toDate = computeToDate(baseType, moveInDate, checkinTime, selectedType?.days)
+    setNewRentFrom(moveInDate)
+    setNewRentTo(toDate)
+    if (checkinTime) {
+      const d = new Date(`${toDate}T${checkinTime}`)
+      setNewRentToTime(d.toTimeString().slice(0, 5))
+    } else {
+      setNewRentToTime('')
+    }
+    const fromDt = new Date(moveInDate)
+    const toDt = new Date(toDate)
+    setRentDaysCount(Math.round((toDt - fromDt) / (1000 * 60 * 60 * 24)))
+  }, [moveInDate, checkinTime, selectedType])
+
+  const setAlert = (field, type, message) => setAlerts(prev => ({ ...prev, [field]: { type, message } }))
+  const clearAlert = (field) => setAlerts(prev => { const { [field]: _, ...rest } = prev; return rest })
+
+  const handleSavePerson = async (field) => {
     setSaving(true)
     try {
       await updatePerson(person.id, {
         name, phone, move_in_date: moveInDate || null,
+        checkin_time: checkinTime || null,
         rent_type_id: selectedTypeId || null,
         rent_amount: rentAmount ? parseFloat(rentAmount) : null,
-        ...overrides,
+        notes: notes || null,
       })
       const finalName = name || person.name
       if (!person.name && name) {
@@ -146,8 +175,9 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
         logEvent({ userId, propertyId: person.property_id, personId: person.id, eventType: 'person_updated', description: `"${finalName}" details updated` }).catch(() => {})
       }
       if (onPersonChange) onPersonChange()
+      if (field) { setAlert(field, 'success', 'Saved successfully'); setTimeout(() => clearAlert(field), 2000) }
     } catch (err) {
-      alert(err.message)
+      if (field) { setAlert(field, 'error', err.message); setTimeout(() => clearAlert(field), 3000) }
     } finally {
       setSaving(false)
     }
@@ -209,12 +239,12 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
   }
 
   const openAddRent = () => {
-    const baseType = selectedType?.type || 'monthly'
-    const from = moveInDate || ''
+    let valid = true
+    if (!selectedType) { setAlert('rentType', 'error', 'Select a rent type'); valid = false } else clearAlert('rentType')
+    if (!moveInDate) { setAlert('moveInDate', 'error', 'Check-in date is required'); valid = false } else clearAlert('moveInDate')
+    if (!valid) return
     setNewRentAmount(rentAmount ? String(rentAmount) : '')
     setNewRentPaidDate(new Date().toISOString())
-    setNewRentFrom(from)
-    setNewRentTo(computeToDate(baseType, from))
     setAddingRent(true)
   }
 
@@ -233,7 +263,27 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
         : now.toISOString()
 
       let periods = []
-      if (baseType === 'monthly' || baseType === 'quarterly' || baseType === 'yearly') {
+      const rentDays = selectedType?.days
+
+      if (rentDays) {
+        let d = new Date(fromDate)
+        let count = 0
+        while (d < toDate) {
+          const periodEnd = new Date(d)
+          periodEnd.setDate(periodEnd.getDate() + rentDays)
+          if (periodEnd > toDate) break
+          const m = d.getMonth() + 1
+          const y = d.getFullYear()
+          periods.push({ month: m, year: y, dueDate: periodEnd.toISOString().split('T')[0] })
+          d = periodEnd
+          count++
+        }
+        if (count === 0) {
+          const m = fromDate.getMonth() + 1
+          const y = fromDate.getFullYear()
+          periods.push({ month: m, year: y, dueDate: toDate.toISOString().split('T')[0] })
+        }
+      } else {
         const months = getMonthsInRange(fromDate, toDate)
         if (months.length === 0) {
           const m = fromDate.getMonth() + 1
@@ -245,23 +295,6 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
             dueDate: new Date(year, month, 0).toISOString().split('T')[0],
           }))
         }
-      } else if (baseType === 'weekly') {
-        let d = new Date(fromDate)
-        while (d < toDate) {
-          const m = d.getMonth() + 1
-          const y = d.getFullYear()
-          periods.push({ month: m, year: y, dueDate: new Date(y, m, 0).toISOString().split('T')[0] })
-          d.setDate(d.getDate() + 7)
-        }
-        if (periods.length === 0) {
-          const m = fromDate.getMonth() + 1
-          const y = fromDate.getFullYear()
-          periods.push({ month: m, year: y, dueDate: new Date(y, m, 0).toISOString().split('T')[0] })
-        }
-      } else {
-        const m = fromDate.getMonth() + 1
-        const y = fromDate.getFullYear()
-        periods.push({ month: m, year: y, dueDate: new Date(y, m, 0).toISOString().split('T')[0] })
       }
 
       const results = []
@@ -388,6 +421,14 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
     }
   }
 
+  const handleClose = () => {
+    let valid = true
+    if (!name.trim()) { setAlert('name', 'error', 'Name is required'); valid = false } else clearAlert('name')
+    if (!phone.trim()) { setAlert('phone', 'error', 'Phone is required'); valid = false } else clearAlert('phone')
+    if (!valid) return
+    onClose()
+  }
+
   return (
     <div className="pd-overlay" onClick={onClose}>
       <div className="pd-modal" onClick={e => e.stopPropagation()}>
@@ -395,7 +436,10 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
           <div className="pd-header-info">
             <h2>{person.name || 'New Occupant'}</h2>
             {person.property?.name && (
-              <span className="pd-header-sub">{person.property.name}</span>
+              <span className="pd-header-sub">
+                {person.property.name}
+                {person.room?.name && ` (${person.floor?.name ? `${person.floor.name}, ` : ''}${person.room.name})`}
+              </span>
             )}
           </div>
           <button className="pd-close" onClick={onClose}><X size={20} /></button>
@@ -408,28 +452,56 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                           <h3>Person Details</h3>
             </div>
             <div className="pd-card-body">
-              <div className="pd-field">
-                <label>Name</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} onBlur={() => handleSavePerson()} placeholder="Tenant name" />
+              <div className="pd-row">
+                <div className="pd-field">
+                  <label>Name <span className="pd-required">*</span></label>
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} onBlur={() => handleSavePerson('name')} placeholder="Tenant name" required className={alerts.name?.type ? `field-${alerts.name.type}` : ''} />
+                  <FieldAlert type={alerts.name?.type} message={alerts.name?.message} />
+                </div>
+                <div className="pd-field">
+                  <label>Phone <span className="pd-required">*</span></label>
+                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} onBlur={() => handleSavePerson('phone')} placeholder="9876543210" required className={alerts.phone?.type ? `field-${alerts.phone.type}` : ''} />
+                  <FieldAlert type={alerts.phone?.type} message={alerts.phone?.message} />
+                </div>
               </div>
               <div className="pd-row">
                 <div className="pd-field">
-                  <label>Phone</label>
-                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} onBlur={() => handleSavePerson()} placeholder="9876543210" />
+                  <label>Check-in Date</label>
+                  <DatePicker value={moveInDate} onChange={e => { const d = e.target.value; setMoveInDate(d); setAddingRent(false); handleSavePerson({ move_in_date: d || null }) }} />
+                  <FieldAlert type={alerts.moveInDate?.type} message={alerts.moveInDate?.message} />
                 </div>
                 <div className="pd-field">
-                  <label>Move-in Date</label>
-                  <DatePicker value={moveInDate} onChange={e => { const d = e.target.value; setMoveInDate(d); setAddingRent(false); handleSavePerson({ move_in_date: d || null }) }} />
+                  <label>Check-in Time (optional)</label>
+                  <input type="time" value={checkinTime} onFocus={e => { if (!e.target.value) { const now = new Date().toTimeString().slice(0, 5); setCheckinTime(now); e.target.value = now } e.target.showPicker?.() }} onChange={e => setCheckinTime(e.target.value)} onBlur={() => handleSavePerson()} />
+                  <FieldAlert type={alerts.checkinTime?.type} message={alerts.checkinTime?.message} />
                 </div>
               </div>
-              <div className="pd-docs-inline">
-                <div className="pd-docs-inline-head">
-                  <Paperclip size={13} />
-                  <span>Documents</span>
+              <div className="pd-field">
+                <label>Documents {documents.length > 0 && <span className="pd-doc-count">({documents.length}/3)</span>}</label>
+                <div className="pd-docs-area">
+                  {documents.length > 0 && (
+                    <div className="pd-doc-list">
+                      {documents.map(doc => (
+                        <div key={doc.id} className="pd-doc-item">
+                          <Paperclip size={13} className="pd-doc-icon" />
+                          <span className="pd-doc-name">{doc.file_name}</span>
+                          <div className="pd-doc-actions">
+                            <button className="pd-action-icon" onClick={() => handleDownloadDocument(doc.file_path)} title="Download">
+                              <Download size={12} />
+                            </button>
+                            <button className="pd-action-icon danger" onClick={() => handleDeleteDocument(doc.id, doc.file_path)} title="Delete">
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   {documents.length < 3 && (
-                    <>
+                    <div className="pd-docs-actions">
                       <label className="pd-upload-label" title="Take photo">
-                        <Camera size={16} />
+                        <Camera size={14} />
+                        <span>Camera</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -440,7 +512,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                         />
                       </label>
                       <label className="pd-upload-label" title="Upload from device">
-                        {uploading ? '...' : <><Plus size={12} /> Add</>}
+                        {uploading ? 'Uploading...' : <><Plus size={14} /> Upload</>}
                         <input
                           type="file"
                           accept="image/*,.pdf,.doc,.docx"
@@ -450,40 +522,10 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                           style={{ display: 'none' }}
                         />
                       </label>
-                    </>
+                    </div>
                   )}
                 </div>
-                {documents.length === 0 ? (
-                  // <p className="pd-empty"></p>
-                  <></>
-                ) : (
-                  <div className="pd-doc-list">
-                    {documents.map(doc => (
-                      <div key={doc.id} className="pd-doc-item">
-                        <Paperclip size={13} className="pd-doc-icon" />
-                        <span className="pd-doc-name">{doc.file_name}</span>
-                        <div className="pd-doc-actions">
-                          <button className="pd-action-icon" onClick={() => handleDownloadDocument(doc.file_path)} title="Download">
-                            <Download size={12} />
-                          </button>
-                          <button className="pd-action-icon danger" onClick={() => handleDeleteDocument(doc.id, doc.file_path)} title="Delete">
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
-            </div>
-          </section>
-
-          <section className="pd-card">
-            <div className="pd-card-header">
-              <span className="pd-card-icon"><IndianRupee size={14} /></span>
-              <h3>Rent Type</h3>
-            </div>
-            <div className="pd-card-body">
               <div className="pd-row">
                 <div className="pd-field">
                   <label>Rent Type</label>
@@ -493,12 +535,22 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                       <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
                   </select>
+                  <FieldAlert type={alerts.rentType?.type} message={alerts.rentType?.message} />
                 </div>
                 <div className="pd-field">
                   <label>Amount</label>
                   <input type="number" step="0.01" value={rentAmount} onChange={e => setRentAmount(e.target.value)} onBlur={() => handleSavePerson()} placeholder={selectedType?.amount ? `₹${selectedType.amount}` : 'Enter amount'} />
+                  <FieldAlert type={alerts.amount?.type} message={alerts.amount?.message} />
                 </div>
               </div>
+              <div className={`pd-note-toggle${notes && showNote ? ' pd-note-toggle--locked' : ''}`} onClick={() => { if (!notes) setShowNote(!showNote) }}>
+                {showNote ? '−' : '+'} Note
+              </div>
+              {showNote && (
+                <div className="pd-field">
+                  <textarea className="pd-textarea" value={notes} onChange={e => setNotes(e.target.value)} onBlur={() => handleSavePerson()} placeholder="Any additional information..." rows={2} />
+                </div>
+              )}
             </div>
           </section>
 
@@ -506,13 +558,13 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
             <div className="pd-card-header">
               <span className="pd-card-icon"><Calendar size={14} /></span>
               <h3>Rent Records</h3>
-              <button className="pd-card-action" onClick={openAddRent} disabled={!selectedType}>
+              <button className="pd-card-action" onClick={openAddRent}>
                 <Plus size={13} /> Add
               </button>
             </div>
             <div className="pd-card-body pd-card-body--scroll">
               {addingRent && (
-                <form className="pd-mini-form pd-mini-form--col" onSubmit={handleAddRent}>
+                <form className="pd-rent-form" onSubmit={handleAddRent}>
                   <div className="pd-row">
                     <div className="pd-field">
                       <label>Amount</label>
@@ -529,11 +581,11 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
                       <DatePicker value={newRentFrom} onChange={e => setNewRentFrom(e.target.value)} />
                     </div>
                     <div className="pd-field">
-                      <label>To</label>
-                      <DatePicker value={newRentTo} onChange={e => setNewRentTo(e.target.value)} />
+                      <label>To {rentDaysCount > 0 && <span className="pd-days-badge">{rentDaysCount} days</span>}</label>
+                      <DatePicker value={newRentTo} onChange={e => setNewRentTo(e.target.value)} suffix={newRentToTime ? `(${newRentToTime})` : ''} />
                     </div>
                   </div>
-                  <div className="pd-mini-actions">
+                  <div className="pd-rent-form-actions">
                     <button type="submit" className="pd-btn pd-btn-primary" disabled={saving || !newRentAmount}>
                       {saving ? 'Saving...' : 'Record Payment'}
                     </button>
@@ -599,7 +651,7 @@ export default function PersonDetailModal({ person, userId, onClose, onPersonCha
             <button className="pd-btn pd-btn-warning" onClick={handleCheckOut}>
               <LogOut size={14} /> Check Out
             </button>
-            <button className="pd-btn pd-btn-primary" onClick={onClose}>
+            <button className="pd-btn pd-btn-primary" onClick={handleClose}>
               OK
             </button>
           </div>

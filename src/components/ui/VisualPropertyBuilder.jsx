@@ -77,11 +77,14 @@ function RoomCard({ room, persons, onOpenPerson, onAddPerson, onUpdateRoom, onDe
       <div className="pb-room-header">
         <DoorOpen size={15} className="pb-room-icon" />
         <InlineEdit value={room.name} onSave={name => onUpdateRoom(room.id, name)} readOnly={readOnly} autoEdit={room.id === autoEditId} onAutoEditEnd={onAutoEditEnd} />
-        {roomPersons.length > 0 && roomPersons[0].rent_amount && (
-          <span className="pb-room-rent">
-            <IndianRupee size={11} />{roomPersons[0].rent_amount}
-          </span>
-        )}
+        {roomPersons.length > 0 && (() => {
+          const amounts = roomPersons.map(p => p.rent_amount).filter(Boolean)
+          if (amounts.length === 0) return null
+          const freq = {}
+          let maxFreq = 0, mode = amounts[0]
+          amounts.forEach(a => { freq[a] = (freq[a] || 0) + 1; if (freq[a] > maxFreq) { maxFreq = freq[a]; mode = a } })
+          return <span className="pb-room-rent"><IndianRupee size={11} />{mode}</span>
+        })()}
         {!readOnly && (
           <button className="pb-icon-btn pb-icon-btn--del" onClick={() => onDeleteRoom(room.id)} title="Delete room">
             <Trash2 size={12} />

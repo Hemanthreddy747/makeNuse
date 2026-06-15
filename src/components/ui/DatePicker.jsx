@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 
 const PopperContainer = ({ children }) => createPortal(children, document.body)
 
-export default function DatePickerField({ value, onChange, className = '', minDate, maxDate, ...props }) {
+export default function DatePickerField({ value, onChange, className = '', minDate, maxDate, suffix, ...props }) {
   const date = value ? new Date((value.split('T')[0]) + 'T00:00:00') : null
 
   const handleChange = (date) => {
@@ -27,6 +27,7 @@ export default function DatePickerField({ value, onChange, className = '', minDa
         maxDate={maxDate}
         {...props}
       />
+      {suffix && <span className="date-picker-suffix">{suffix}</span>}
       <Calendar size={16} className="date-picker-icon" />
     </div>
   )
