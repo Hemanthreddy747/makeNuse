@@ -2001,8 +2001,8 @@ button:disabled {
 
 /* ── Room Card ── */
 .pb-room-card {
-  background: #fafafa;
-  border: 1px solid #e5e7eb;
+  background: #f5f3ff;
+  border: 1px solid #e0d8f0;
   border-radius: 12px;
   padding: 12px;
 }
