@@ -257,23 +257,31 @@ export default function VisualPropertyBuilder({ readOnly = false, collapsed: col
     ))
   }
 
-  const demoHandleClick = async (action) => {
+  const demoHandleClick = async (action, demoFloorId, roomIndex) => {
     setDemoLoading(true)
     try {
       const prop = await createProperty({ userId: user.id, name: demoPropName, type: 'pg', address: '' })
       const floors = []
       const rooms = []
+      const floorMap = {}
+      const roomMap = {}
       for (const f of demoFloorsData) {
         const floor = await createFloor({ userId: user.id, propertyId: prop.id, name: f.name })
+        floorMap[f.id] = floor
         floors.push(floor)
-        for (const rn of f.rooms) {
-          const room = await createRoom({ userId: user.id, propertyId: prop.id, floorId: floor.id, name: rn })
+        for (let ri = 0; ri < f.rooms.length; ri++) {
+          const room = await createRoom({ userId: user.id, propertyId: prop.id, floorId: floor.id, name: f.rooms[ri] })
+          roomMap[`${f.id}:${ri}`] = room
           rooms.push(room)
         }
       }
       let person = null
-      if (action === 'addPerson') {
-        person = await createPerson({ userId: user.id, propertyId: prop.id, floorId: floors[0].id, roomId: rooms[0].id, name: '', phone: '' })
+      if (action === 'addPerson' && demoFloorId && roomIndex !== undefined) {
+        const targetFloor = floorMap[demoFloorId]
+        const targetRoom = roomMap[`${demoFloorId}:${roomIndex}`]
+        if (targetFloor && targetRoom) {
+          person = await createPerson({ userId: user.id, propertyId: prop.id, floorId: targetFloor.id, roomId: targetRoom.id, name: '', phone: '' })
+        }
       }
       setProperties([prop])
       setFloors(floors)
@@ -392,12 +400,12 @@ export default function VisualPropertyBuilder({ readOnly = false, collapsed: col
                         </div>
                         <div className="pb-beds">
                           {[1, 2].map(i => (
-                            <div key={i} className="pb-bed pb-bed--empty" onClick={demoLoading ? undefined : () => demoHandleClick('addPerson')} title="Add occupant">
+                            <div key={i} className="pb-bed pb-bed--empty" onClick={demoLoading ? undefined : () => demoHandleClick('addPerson', floor.id, ri)} title="Add occupant">
                               <Bed size={13} className="pb-bed-icon" />
                               <span className="pb-bed-label">Available</span>
                             </div>
                           ))}
-                          <button className="pb-add-bed" onClick={demoLoading ? undefined : () => demoHandleClick('addPerson')} disabled={demoLoading} title="Add person">
+                          <button className="pb-add-bed" onClick={demoLoading ? undefined : () => demoHandleClick('addPerson', floor.id, ri)} disabled={demoLoading} title="Add person">
                             <Plus size={12} /> Bed
                           </button>
                         </div>

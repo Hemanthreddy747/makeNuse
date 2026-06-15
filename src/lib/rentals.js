@@ -330,7 +330,7 @@ export async function fetchFloors(userId, propertyId) {
     .select('*')
     .eq('user_id', userId)
     .eq('property_id', propertyId)
-    .order('name', { ascending: true })
+    .order('name', { ascending: false })
   if (error) throw error
   return data
 }
@@ -369,7 +369,7 @@ export async function fetchRooms(userId, propertyId) {
     .select('*')
     .eq('user_id', userId)
     .eq('property_id', propertyId)
-    .order('name', { ascending: true })
+    .order('name', { ascending: false })
   if (error) throw error
   return data
 }
@@ -405,7 +405,7 @@ export async function fetchAllFloors(userId) {
     .from('floors')
     .select('*')
     .eq('user_id', userId)
-    .order('name', { ascending: true })
+    .order('name', { ascending: false })
   if (error) throw error
   return data
 }
@@ -428,7 +428,7 @@ export async function fetchPropertyTree(userId, propertyId) {
     .select('*, rent_type:rent_type_id(*)')
     .eq('user_id', userId)
     .eq('property_id', propertyId)
-    .order('name', { ascending: true })
+    .order('name', { ascending: false })
   if (perr) throw perr
 
   const [floors, rooms] = await Promise.all([
