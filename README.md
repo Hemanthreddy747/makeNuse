@@ -1,4 +1,4 @@
-# RentJaga
+# makeNuse
 
 A clean React (Vite) starter that already includes Supabase authentication with:
 
