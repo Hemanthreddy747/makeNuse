@@ -1,14 +1,11 @@
-import { LogOut, Sun, Moon, Trash2, Mail, Shield, Clock, User as UserIcon } from 'lucide-react'
+import { LogOut, Sun, Moon, Mail, Shield, Clock, User as UserIcon } from 'lucide-react'
 import { useAuth } from '../../context/AuthProvider'
 import { useTheme } from '../../context/ThemeContext'
 import { formatDate, formatDateTime } from '../../lib/dates'
-import { supabase } from '../../lib/supabaseClient'
-import { useConfirm } from '../../context/ConfirmContext'
 
 export default function ProfilePage() {
   const { user, signInWithGoogle, signOut } = useAuth()
   const { theme, toggleTheme } = useTheme()
-  const confirm = useConfirm()
 
   const displayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email
   const avatarUrl = user.user_metadata?.avatar_url
@@ -70,21 +67,6 @@ export default function ProfilePage() {
                 <div className="theme-switch-knob" />
               </div>
             </div>
-          </div>
-
-          <div className="profile-card profile-card--danger">
-            <h3>Danger zone</h3>
-            <button className="btn-danger" onClick={async () => {
-              const ok = await confirm('Delete ALL your data? This includes properties, rooms, persons, rent records, and documents. This cannot be undone.')
-              if (!ok) return
-              const ok2 = await confirm('Final warning. All data will be permanently deleted. Continue?')
-              if (!ok2) return
-              await supabase.rpc('clear_user_data')
-              window.location.reload()
-            }}>
-              <Trash2 size={16} />
-              <span>Clear all data</span>
-            </button>
           </div>
         </div>
 

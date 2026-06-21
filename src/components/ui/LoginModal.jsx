@@ -127,7 +127,7 @@ export default function LoginModal() {
     } else {
       toast.success('Logged in successfully')
       closeLogin()
-      navigate('/dashboard', { replace: true })
+      navigate('/profile', { replace: true })
     }
   }
 
@@ -216,7 +216,7 @@ export default function LoginModal() {
       const msg = view === 'signup' ? 'Account created and logged in' : 'Logged in successfully'
       toast.success(msg)
       closeLogin()
-      navigate('/dashboard', { replace: true })
+      navigate('/profile', { replace: true })
     }
   }
 

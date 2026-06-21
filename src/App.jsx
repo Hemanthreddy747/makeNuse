@@ -9,10 +9,10 @@ import AppLayout from './components/layout/AppLayout'
 import Landing from './landing/Landing'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import LoginModal from './components/ui/LoginModal'
-import DashboardPage from './features/dashboard/DashboardPage'
 import ProfilePage from './features/profile/ProfilePage'
-import CreatePage from './features/add-new/AddNewPage'
-import ManagePage from './features/manage/ManagePage'
+import Page1 from './features/page1/Page1'
+import Page2 from './features/page2/Page2'
+import MakePage from './features/make/MakePage'
 import Loader from './components/ui/Loader'
 import { useEffect } from 'react'
 import { isSupabaseConfigured } from './lib/supabaseClient'
@@ -57,9 +57,9 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordRoute />} />
 
       <Route element={<AppLayout />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/create" element={<CreatePage />} />
-        <Route path="/manage" element={<ManagePage />} />
+        <Route path="/make" element={<MakePage />} />
+        <Route path="/page1" element={<Page1 />} />
+        <Route path="/page2" element={<Page2 />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
 

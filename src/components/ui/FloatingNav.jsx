@@ -1,20 +1,20 @@
 import { useState, useRef, useEffect } from "react"
 import { useNavigate, useLocation, Link } from "react-router-dom"
 import { motion } from "motion/react"
-import { LayoutDashboard, Plus, List, Settings } from "lucide-react"
+import { Settings, FileText, Layers, Bot } from "lucide-react"
 import logo from "../../assets/logo.png"
 
 const navItems = [
-  { id: 0, to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { id: 1, to: "/manage", icon: List, label: "Manage" },
-  { id: 2, to: "/create", icon: Plus, label: "Create" },
+  { id: 0, to: "/make", icon: Bot, label: "Make" },
+  { id: 1, to: "/page1", icon: FileText, label: "Page 1" },
+  { id: 2, to: "/page2", icon: Layers, label: "Page 2" },
   { id: 3, to: "/profile", icon: Settings, label: "Profile" },
 ]
 
 const pathToId = {
-  "/dashboard": 0,
-  "/manage": 1,
-  "/create": 2,
+  "/make": 0,
+  "/page1": 1,
+  "/page2": 2,
   "/profile": 3,
 }
 
@@ -55,8 +55,8 @@ export default function FloatingNav() {
   return (
     <div className="floating-nav-wrapper">
       <div ref={containerRef} className="floating-nav-pill">
-        <Link to="/dashboard" className="floating-nav-logo">
-          <img src={logo} alt="Rent Jaga" />
+        <Link to="/profile" className="floating-nav-logo">
+          <img src={logo} alt="makeNuse" />
         </Link>
 
         {navItems.map((item, index) => (
