@@ -11,24 +11,29 @@ const navItems = [
   { id: 3, to: "/profile", icon: Settings, label: "Profile" },
 ]
 
-const pathToId = {
+const staticPaths = {
   "/make": 0,
   "/page1": 1,
   "/page2": 2,
   "/profile": 3,
 }
 
+function resolveActive(pathname) {
+  if (pathname in staticPaths) return staticPaths[pathname]
+  return -1
+}
+
 export default function FloatingNav() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [active, setActive] = useState(() => pathToId[location.pathname] ?? 0)
+  const [active, setActive] = useState(() => resolveActive(location.pathname))
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 })
   const containerRef = useRef(null)
   const btnRefs = useRef([])
 
   useEffect(() => {
-    const id = pathToId[location.pathname]
-    if (id !== undefined) setActive(id)
+    const id = resolveActive(location.pathname)
+    setActive(id)
   }, [location.pathname])
 
   useEffect(() => {

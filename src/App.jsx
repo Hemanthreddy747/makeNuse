@@ -13,6 +13,7 @@ import ProfilePage from './features/profile/ProfilePage'
 import Page1 from './features/page1/Page1'
 import Page2 from './features/page2/Page2'
 import MakePage from './features/make/MakePage'
+import PageSlotViewer from './features/page-slot/PageSlotViewer'
 import Loader from './components/ui/Loader'
 import { useEffect } from 'react'
 import { isSupabaseConfigured } from './lib/supabaseClient'
@@ -60,6 +61,7 @@ function AppRoutes() {
         <Route path="/make" element={<MakePage />} />
         <Route path="/page1" element={<Page1 />} />
         <Route path="/page2" element={<Page2 />} />
+        <Route path="/page/:name" element={<PageSlotViewer />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
 
